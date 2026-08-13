@@ -4,7 +4,7 @@
 
 TwinFlow Studio 面向数字孪生产品、解决方案、实施和数据人员，帮助在项目早期从 Excel / CSV 资产资料中识别业务对象、建立空间与设备关系、检查数据质量并形成可追溯治理报告。
 
-**当前版本：v0.3.0（骨架 + 合成数据 + 数据预览 + CSV/XLSX 导入 + 确定性校验规则引擎 + 测试底座）**
+**当前版本：v0.4.0（骨架 + 合成数据 + 数据预览 + CSV/XLSX 导入 + 确定性校验规则引擎 + 对象关系图与项目保存恢复 + 测试底座）**
 
 - 产品定位与边界见 `02_Context/Project_Context.md` 与 `02_Context/Roadmap_V0.1-V0.6.md`
 - 执行交接见根目录 `WORKBUDDY_HY3_HANDOFF.md`
@@ -39,7 +39,15 @@ TwinFlow Studio 面向数字孪生产品、解决方案、实施和数据人员�
 - 新增 `/validate` 页面：切换「内置 Demo / 含问题样例 / 无根空间样例」，查看分级汇总、规则维度汇总与可筛选问题清单
 - `/import` 页面在字段映射校验后追加规则引擎结果区块（并说明跨表规则被跳过）
 
-> 后续版本（v0.4–v0.6）将逐步开放对象关系图与孤立对象可视化、项目保存恢复、AI 建议与报告导出。
+## v0.4.0 新增：对象关系图、孤立对象与项目保存恢复
+
+- **对象关系图**：基于 React Flow（`@xyflow/react`）在 `/graph` 页面可视化 Space / Asset / Sensor 的层级与引用结构；节点按类型配色、可缩放 / 拖拽 / fit view，点击查看对象详情
+- **确定性布局与连线**：按类型分列的稳定布局，生成「父级 / 位于空间 / 挂载设备」三类关系连线
+- **孤立 / 悬空对象识别**：高亮悬空引用与层级不可达对象并标注中文原因；被引用表为空时跳过跨表判定，不产生误报
+- **项目保存与恢复**：当前数据（Demo 或导入结果）自动写入浏览器 `localStorage`，关闭重开自动恢复；提供「清空项目」入口
+- `/demo`、`/import` 在产出数据后写入统一项目状态，`/graph` 可直接读取；首页新增「查看关系图 →」入口
+
+> 后续版本（v0.5–v0.6）将逐步开放 AI 建议与报告导出。
 
 ## 快速开始（Windows）
 
@@ -55,6 +63,7 @@ npm run dev
 #   - 点击「打开 Demo」进入合成工业园区 Demo
 #   - 点击「导入数据」进入 CSV / XLSX 导入与字段映射
 #   - 点击「校验数据」运行 15 条校验规则引擎并查看分级、可溯源问题清单
+#   - 点击「查看关系图」以关系图查看对象层级与引用，孤立对象会被高亮
 
 # 3. 或构建并以生产模式运行
 npm run build
@@ -78,7 +87,7 @@ npm run start
 ```
 twinflow-studio/
 ├── src/
-│   ├── app/                 # Next.js App Router（首页 / demo 页 / import 页 / validate 页）
+│   ├── app/                 # Next.js App Router（首页 / demo / import / validate / graph 页）
 │   ├── components/          # UI 组件（数据表、计数、空/错误态、校验汇总/问题清单）
 │   ├── lib/
 │   │   ├── types.ts         # Zod 领域模型（Space/Asset/Sensor）
@@ -94,6 +103,8 @@ twinflow-studio/
 │   │   │   ├── registry.ts       # 规则注册表（ALL_RULES）
 │   │   │   ├── engine.ts         # runRules / 排序 / 筛选 / 溯源
 │   │   │   └── index.ts          # 对外出口
+│   │   ├── graph/           # v0.4.0 关系图：types / orphans（孤立识别）/ layout（确定性布局）
+│   │   ├── project/         # v0.4.0 项目状态与持久化：types / persist / ProjectProvider
 │   │   └── import/          # v0.2.0 导入：解析 / 目标字段 / 映射与校验
 │   │       ├── parse.ts          # CSV/XLSX → {sheets, rows}
 │   │       ├── fieldTargets.ts   # 目标字段定义与表头别名

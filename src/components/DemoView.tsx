@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { DemoResult } from "@/lib/loadDemo";
+import { useProject } from "@/lib/project/ProjectProvider";
 import {
   ASSET_COLUMNS,
   SENSOR_COLUMNS,
@@ -25,6 +27,11 @@ const TABS: { key: TabKey; label: string }[] = [
 
 export function DemoView({ result }: { result: DemoResult }) {
   const [tab, setTab] = useState<TabKey>("space");
+  const { loadDemo, isEmpty } = useProject();
+
+  useEffect(() => {
+    if (result.status === "success" && isEmpty) loadDemo();
+  }, [result.status, isEmpty, loadDemo]);
 
   if (result.status === "error") {
     return <ErrorState message={result.message} />;
@@ -46,6 +53,19 @@ export function DemoView({ result }: { result: DemoResult }) {
         assets={data.assets.length}
         sensors={data.sensors.length}
       />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={loadDemo}
+          className="rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+        >
+          加载此 Demo 到项目
+        </button>
+        <Link href="/graph" className="text-sm text-brand-600 hover:underline">
+          在关系图中查看 →
+        </Link>
+      </div>
 
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="对象类型">
         {TABS.map((t) => (

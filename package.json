@@ -1,8 +1,8 @@
 {
   "name": "twinflow-studio",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
-  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.3.0: deterministic validation rule engine, 15 rules, graded & traceable issues).",
+  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.4.0: object relationship graph, isolated-object detection, localStorage project save/restore).",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
@@ -13,6 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@xyflow/react": "^12.11.3",
     "next": "^15.1.0",
     "papaparse": "^5.4.1",
     "react": "^19.0.0",

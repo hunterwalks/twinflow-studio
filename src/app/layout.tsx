@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import "@xyflow/react/dist/style.css";
+import { ProjectProvider } from "@/lib/project/ProjectProvider";
 
 export const metadata: Metadata = {
   title: "TwinFlow Studio",
@@ -10,7 +12,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="zh-CN">
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen">
+        <ProjectProvider>{children}</ProjectProvider>
+      </body>
     </html>
   );
 }

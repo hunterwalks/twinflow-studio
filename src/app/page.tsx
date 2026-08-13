@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.3.0</p>
+      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.4.0</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
         数字孪生数据建模与质量治理工作台
       </h1>
@@ -53,9 +53,23 @@ export default function HomePage() {
         </Link>
       </div>
 
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-800">可视化对象关系图</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          以关系图查看 Space / Asset / Sensor 的层级与引用结构，孤立或悬空对象会被高亮并标注原因；
+          当前项目会自动保存在浏览器本地，关闭重开后自动恢复。
+        </p>
+        <Link
+          href="/graph"
+          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
+        >
+          查看关系图 →
+        </Link>
+      </div>
+
       <p className="mt-10 text-xs text-slate-400">
-        当前为 v0.3.0：在 v0.2.0 导入链路之上新增确定性校验规则引擎（15 条规则、问题分级与溯源）。
-        AI 建议、关系图与报告导出将在后续版本逐步开放。
+        当前为 v0.4.0：在 v0.3.0 校验引擎之上新增对象关系图（React Flow 渲染）、孤立 / 悬空对象
+        高亮，以及项目本地自动保存与恢复（关闭重开自动继续）。AI 建议与报告导出将在后续版本逐步开放。
       </p>
     </main>
   );

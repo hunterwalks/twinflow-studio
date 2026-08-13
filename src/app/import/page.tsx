@@ -34,6 +34,7 @@ import {
   type RuleDataset,
   type ValidationReport,
 } from "@/lib/rules/types";
+import { useProject } from "@/lib/project/ProjectProvider";
 
 const PREVIEW_LIMIT = 50;
 
@@ -50,6 +51,7 @@ export default function ImportPage() {
   const [mapping, setMapping] = useState<Mapping>({});
   const [outcome, setOutcome] = useState<ImportOutcome | null>(null);
   const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
+  const { importTable } = useProject();
 
 const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
   space: "spaces",
@@ -118,12 +120,14 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
   function onConfirm() {
     if (!currentSheet) return;
     const records = buildRecords(currentSheet.rows, mapping);
-    setOutcome(validateImport(records, target));
+    const outcome = validateImport(records, target);
+    setOutcome(outcome);
     // 仅导入了单张表，引擎只在该表内执行规则；涉及其他表的引用 / 覆盖类规则
     // 因数据不足会自动跳过，不会产生悬空引用误报。
     const dataset: RuleDataset = { spaces: [], assets: [], sensors: [] };
     dataset[PLURAL[target]] = records as LooseRecord[];
     setValidationReport(runRules(makeDataset({ [PLURAL[target]]: dataset[PLURAL[target]] })));
+    importTable(PLURAL[target], outcome.valid);
   }
 
   function onReset() {
@@ -361,6 +365,12 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
           {/* 规则引擎校验结果 */}
           {validationReport && (
             <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-400">本次导入已写入项目，可在关系图中查看整体结构。</p>
+                <Link href="/graph" className="text-sm text-brand-600 hover:underline">
+                  在关系图中查看 →
+                </Link>
+              </div>
               <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
                 <h3 className="text-sm font-semibold text-slate-700">规则引擎校验</h3>
                 <p className="mt-2 text-xs leading-5 text-slate-400">
