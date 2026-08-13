@@ -1,8 +1,8 @@
 {
   "name": "twinflow-studio",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.2.0: CSV/XLSX import, worksheet selection, field mapping).",
+  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.3.0: deterministic validation rule engine, 15 rules, graded & traceable issues).",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",

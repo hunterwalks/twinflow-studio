@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.2.0</p>
+      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.3.0</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
         数字孪生数据建模与质量治理工作台
       </h1>
@@ -39,9 +39,23 @@ export default function HomePage() {
         </Link>
       </div>
 
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-800">校验数据质量</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          对内置 Demo 或含问题样例运行 15 条确定性校验规则，得到分级（错误 / 警告 / 提示）
+          且可溯源（表 / 行号 / 记录 ID / 字段）的问题清单，每条问题附带修复建议。
+        </p>
+        <Link
+          href="/validate"
+          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
+        >
+          校验数据 →
+        </Link>
+      </div>
+
       <p className="mt-10 text-xs text-slate-400">
-        当前为 v0.2.0：在 v0.1.0 骨架基础上新增 CSV / XLSX 导入、工作表选择与字段映射。
-        AI 建议、校验规则引擎、关系图与报告导出将在后续版本逐步开放。
+        当前为 v0.3.0：在 v0.2.0 导入链路之上新增确定性校验规则引擎（15 条规则、问题分级与溯源）。
+        AI 建议、关系图与报告导出将在后续版本逐步开放。
       </p>
     </main>
   );

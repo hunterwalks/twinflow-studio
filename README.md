@@ -4,11 +4,11 @@
 
 TwinFlow Studio 面向数字孪生产品、解决方案、实施和数据人员，帮助在项目早期从 Excel / CSV 资产资料中识别业务对象、建立空间与设备关系、检查数据质量并形成可追溯治理报告。
 
-**当前版本：v0.2.0（骨架 + 合成数据 + 数据预览 + CSV/XLSX 导入 + 测试底座）**
+**当前版本：v0.3.0（骨架 + 合成数据 + 数据预览 + CSV/XLSX 导入 + 确定性校验规则引擎 + 测试底座）**
 
 - 产品定位与边界见 `02_Context/Project_Context.md` 与 `02_Context/Roadmap_V0.1-V0.6.md`
 - 执行交接见根目录 `WORKBUDDY_HY3_HANDOFF.md`
-- 本仓库当前只承载 v0.1.0 范围，不提前实现后续版本功能
+- 本仓库当前只承载 v0.1.0–v0.3.0 范围，不提前实现后续版本功能
 
 ## v0.1.0 能力范围
 
@@ -28,7 +28,18 @@ TwinFlow Studio 面向数字孪生产品、解决方案、实施和数据人员�
 - 对不支持的格式、空文件、无法解析的文件给出明确中文提示
 - 新增依赖：`papaparse`（CSV）、`xlsx`（SheetJS，XLSX）；均为浏览器端库
 
-> 后续版本（v0.3–v0.6）将逐步开放校验规则引擎、关系图、AI 建议与报告导出。
+## v0.3.0 新增：确定性校验规则引擎
+
+- **15 条规则**，覆盖 6 个类别：完整性、唯一性、引用完整性、层级、覆盖度、规范性
+- **问题分级**：错误（数据不可用）/ 警告（可用但有治理风险）/ 提示（完整度与覆盖度信息）
+- **问题可溯源**：每条问题定位到 表 / 行号 / 记录 ID / 字段，并给出中文描述与修复建议
+- **确定性输出**：排序键固定为 级别 → 表 → 行号 → 规则 ID → 字段，同一输入必然同输出
+- **假阳性防护**：被引用表为空时，跨表引用类规则自动跳过并标注原因，不产生悬空引用误报
+- **纯函数、无 AI、无网络、无持久化**：直接作用于 v0.2.0 导入产物这样的宽松数据集
+- 新增 `/validate` 页面：切换「内置 Demo / 含问题样例 / 无根空间样例」，查看分级汇总、规则维度汇总与可筛选问题清单
+- `/import` 页面在字段映射校验后追加规则引擎结果区块（并说明跨表规则被跳过）
+
+> 后续版本（v0.4–v0.6）将逐步开放对象关系图与孤立对象可视化、项目保存恢复、AI 建议与报告导出。
 
 ## 快速开始（Windows）
 
@@ -43,6 +54,7 @@ npm run dev
 # 打开 http://localhost:3000
 #   - 点击「打开 Demo」进入合成工业园区 Demo
 #   - 点击「导入数据」进入 CSV / XLSX 导入与字段映射
+#   - 点击「校验数据」运行 15 条校验规则引擎并查看分级、可溯源问题清单
 
 # 3. 或构建并以生产模式运行
 npm run build
@@ -66,18 +78,27 @@ npm run start
 ```
 twinflow-studio/
 ├── src/
-│   ├── app/                 # Next.js App Router（首页 / demo 页 / import 页）
-│   ├── components/          # UI 组件（数据表、计数、空/错误态）
+│   ├── app/                 # Next.js App Router（首页 / demo 页 / import 页 / validate 页）
+│   ├── components/          # UI 组件（数据表、计数、空/错误态、校验汇总/问题清单）
 │   ├── lib/
 │   │   ├── types.ts         # Zod 领域模型（Space/Asset/Sensor）
-│   │   ├── data/            # 合成工业园区 fixture
+│   │   ├── data/            # 合成工业园区 fixture（含问题样例）
 │   │   ├── loadDemo.ts      # Demo 加载状态机 + 计数
 │   │   ├── table.ts         # 工作表预览列/行派生
+│   │   ├── rules/           # v0.3.0 校验规则引擎（纯 TS）
+│   │   │   ├── types.ts          # Issue / Rule / 分级 / 类别
+│   │   │   ├── dataset.ts        # 宽松数据集与上下文构建
+│   │   │   ├── spec.ts           # 字段标签、必填、引用、命名等规范常量
+│   │   │   ├── define.ts         # 规则定义工厂
+│   │   │   ├── rules/*.ts        # 6 个类别文件承载 15 条规则
+│   │   │   ├── registry.ts       # 规则注册表（ALL_RULES）
+│   │   │   ├── engine.ts         # runRules / 排序 / 筛选 / 溯源
+│   │   │   └── index.ts          # 对外出口
 │   │   └── import/          # v0.2.0 导入：解析 / 目标字段 / 映射与校验
 │   │       ├── parse.ts          # CSV/XLSX → {sheets, rows}
 │   │       ├── fieldTargets.ts   # 目标字段定义与表头别名
 │   │       └── mapping.ts        # 表头自动匹配 + 列→记录 + Zod 校验
-│   └── test/                # Vitest 单元测试（含 import 解析/映射/校验）
+│   └── test/                # Vitest 单元测试（含 import 与 rules）
 ├── .gitignore               # 忽略 .env、密钥与构建产物
 ├── CHANGELOG.md             # 版本变更记录
 └── LICENSE                  # MIT

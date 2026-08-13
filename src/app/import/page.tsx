@@ -23,6 +23,17 @@ import {
 import { DataTable } from "@/components/DataTable";
 import { ErrorState } from "@/components/ErrorState";
 import { EmptyState } from "@/components/EmptyState";
+import { ValidationSummary } from "@/components/ValidationSummary";
+import { RuleSummaryTable } from "@/components/RuleSummaryTable";
+import { IssueTable } from "@/components/IssueTable";
+import { makeDataset } from "@/lib/rules/dataset";
+import { runRules } from "@/lib/rules/engine";
+import {
+  TABLE_LABEL,
+  type LooseRecord,
+  type RuleDataset,
+  type ValidationReport,
+} from "@/lib/rules/types";
 
 const PREVIEW_LIMIT = 50;
 
@@ -38,6 +49,13 @@ export default function ImportPage() {
   const [target, setTarget] = useState<ImportTargetType>("space");
   const [mapping, setMapping] = useState<Mapping>({});
   const [outcome, setOutcome] = useState<ImportOutcome | null>(null);
+  const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
+
+const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
+  space: "spaces",
+  asset: "assets",
+  sensor: "sensors",
+};
 
   const currentSheet = useMemo(
     () => (parse && parse.ok ? parse.sheets[selectedSheet] ?? null : null),
@@ -101,11 +119,17 @@ export default function ImportPage() {
     if (!currentSheet) return;
     const records = buildRecords(currentSheet.rows, mapping);
     setOutcome(validateImport(records, target));
+    // 仅导入了单张表，引擎只在该表内执行规则；涉及其他表的引用 / 覆盖类规则
+    // 因数据不足会自动跳过，不会产生悬空引用误报。
+    const dataset: RuleDataset = { spaces: [], assets: [], sensors: [] };
+    dataset[PLURAL[target]] = records as LooseRecord[];
+    setValidationReport(runRules(makeDataset({ [PLURAL[target]]: dataset[PLURAL[target]] })));
   }
 
   function onReset() {
     setParse(null);
     setOutcome(null);
+    setValidationReport(null);
     setFileName("");
     setSelectedSheet(0);
     setMapping({});
@@ -331,6 +355,26 @@ export default function ImportPage() {
               {outcome.valid.length === 0 && outcome.errors.length > 0 && (
                 <ErrorState message="没有通过校验的记录，请检查字段映射与必填项后重试。" />
               )}
+            </div>
+          )}
+
+          {/* 规则引擎校验结果 */}
+          {validationReport && (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-slate-700">规则引擎校验</h3>
+                <p className="mt-2 text-xs leading-5 text-slate-400">
+                  本次仅导入了「{TABLE_LABEL[target]}」单表，引擎只在该表内执行规则；
+                  涉及其他表的引用 / 覆盖类规则因数据不足被自动跳过（见下方「规则维度汇总」中的「已跳过」），
+                  不会产生悬空引用误报。如需整库级校验，请使用「校验数据」页面。
+                </p>
+              </div>
+              <ValidationSummary report={validationReport} />
+              <RuleSummaryTable rows={validationReport.byRule} />
+              <IssueTable
+                title="问题清单（按级别 → 表 → 行号排序，已排除跨表跳过项）"
+                issues={validationReport.issues}
+              />
             </div>
           )}
         </div>
