@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.1.0</p>
+      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.2.0</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
         数字孪生数据建模与质量治理工作台
       </h1>
@@ -25,8 +25,23 @@ export default function HomePage() {
         </Link>
       </div>
 
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-800">导入你的表格数据</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          选择本地 CSV / Excel 文件，预览工作表并把列映射到 Space / Asset / Sensor 模型字段，
+          导入后立即得到通过计数与逐行错误。全程在浏览器本地完成，不上传文件。
+        </p>
+        <Link
+          href="/import"
+          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
+        >
+          导入数据 →
+        </Link>
+      </div>
+
       <p className="mt-10 text-xs text-slate-400">
-        当前为 v0.1.0 骨架版本：应用底座 + 合成数据 + 数据预览 + 测试底座。文件导入、AI 建议与关系图将在后续版本逐步开放。
+        当前为 v0.2.0：在 v0.1.0 骨架基础上新增 CSV / XLSX 导入、工作表选择与字段映射。
+        AI 建议、校验规则引擎、关系图与报告导出将在后续版本逐步开放。
       </p>
     </main>
   );

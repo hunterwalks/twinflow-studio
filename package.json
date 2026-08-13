@@ -1,8 +1,8 @@
 {
   "name": "twinflow-studio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.1.0 skeleton + synthetic demo).",
+  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.2.0: CSV/XLSX import, worksheet selection, field mapping).",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
@@ -14,12 +14,15 @@
   },
   "dependencies": {
     "next": "^15.1.0",
+    "papaparse": "^5.4.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "xlsx": "^0.18.5",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/papaparse": "^5.3.15",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.20",
