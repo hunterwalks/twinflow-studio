@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.5.0</p>
+      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.6.0</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
         数字孪生数据建模与质量治理工作台
       </h1>
@@ -67,10 +67,23 @@ export default function HomePage() {
         </Link>
       </div>
 
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-800">导出数据治理报告</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          基于当前项目数据聚合校验问题、质量评分（0–100 / 等级 A–E）与规则建议，一键导出为
+          自包含 HTML（可打印、可离线打开）或结构化 JSON（便于归档与二次处理）。全部在浏览器本地生成，不上传数据。
+        </p>
+        <Link
+          href="/report"
+          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
+        >
+          导出报告 →
+        </Link>
+      </div>
+
       <p className="mt-10 text-xs text-slate-400">
-        当前为 v0.5.0：在 v0.4.0 对象关系图与项目保存恢复之上，新增确定性字段映射建议（置信度打分 +
-        模糊匹配）、数据质量评分（0–100 / 等级 A–E）与规则 / 治理建议。全部为纯函数、可离线、可测试，
-        无外部 AI 依赖。报告导出将在 v0.6.0 开放。
+        当前为 v0.6.0：在 v0.5.0 映射建议、质量评分与规则建议之上，新增数据治理报告导出（HTML / JSON）。
+        全部为纯函数、可离线、可测试，无外部 AI 依赖；这标志着路线图 v0.1–v0.6 全部落地。
       </p>
     </main>
   );

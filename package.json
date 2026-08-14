@@ -1,8 +1,8 @@
 {
   "name": "twinflow-studio",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
-  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.5.0: deterministic mapping suggestions with confidence scoring, data quality score 0-100, and rule recommendations).",
+  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.6.0: report export HTML/JSON, deterministic mapping suggestions, data quality score 0-100, rule recommendations).",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",

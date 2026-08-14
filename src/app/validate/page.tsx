@@ -135,6 +135,11 @@ export default function ValidatePage() {
         <ValidationSummary report={report} />
         <QualityScoreCard score={quality} />
       </div>
+      <div className="mt-3">
+        <Link href="/report" className="text-sm text-brand-600 hover:text-brand-700">
+          导出当前数据为完整报告（HTML / JSON）→
+        </Link>
+      </div>
 
       {/* 类别分布 */}
       <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">

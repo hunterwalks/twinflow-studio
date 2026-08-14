@@ -4,7 +4,7 @@
 
 TwinFlow Studio 面向数字孪生产品、解决方案、实施和数据人员，帮助在项目早期从 Excel / CSV 资产资料中识别业务对象、建立空间与设备关系、检查数据质量并形成可追溯治理报告。
 
-**当前版本：v0.5.0（骨架 + 合成数据 + 数据预览 + CSV/XLSX 导入 + 确定性校验规则引擎 + 对象关系图与项目保存恢复 + 确定性映射建议/质量评分/规则建议 + 测试底座）**
+**当前版本：v0.6.0（骨架 + 合成数据 + 数据预览 + CSV/XLSX 导入 + 确定性校验规则引擎 + 对象关系图与项目保存恢复 + 确定性映射建议/质量评分/规则建议 + 报告导出 HTML/JSON + 测试底座）**
 
 - 产品定位与边界见 `02_Context/Project_Context.md` 与 `02_Context/Roadmap_V0.1-V0.6.md`
 - 执行交接见根目录 `WORKBUDDY_HY3_HANDOFF.md`
@@ -56,7 +56,17 @@ TwinFlow Studio 面向数字孪生产品、解决方案、实施和数据人员�
 - **规则 / 治理建议**（校验页与导入页）：扫描数据集信号，推荐应启用的内置规则（R001/R002/R005/R006/R008/R010–R012/R014/R015 等）与自定义治理建议（如类型取值单一）；按 高 / 中 / 低 优先级排序，每条给出中文原因。
 - 新增 `src/lib/import/similarity.ts`（相似度工具）、`src/lib/quality/score.ts`（质量评分）、`src/lib/quality/recommend.ts`（规则建议）；导入页映射表新增置信度徽标，校验页与导入页新增质量评分与建议卡片。
 
-> 后续版本（v0.6）将开放报告导出（HTML / JSON）。
+## v0.6.0 新增：数据治理报告导出（HTML / JSON）
+
+> 路线图 v0.1–v0.6 的收官能力，延续 local-first、可离线、纯确定性设计。
+
+- **报告聚合**（`src/lib/report/build.ts`）：由当前数据集一次性聚合出校验报告 + 质量评分（0–100 / 等级 A–E）+ 规则与治理建议，复用 v0.3–v0.5 的既有引擎，与页面展示完全一致；纯函数、确定性、可测试。
+- **HTML 导出**（`src/lib/report/exporters.ts`）：生成**自包含** HTML（内联样式、可打印、可离线双击打开），含质量评分、校验汇总、问题清单（级别 / 表 / 定位 / 字段 / 描述 / 修复建议）与规则建议；所有动态文本均经 HTML 转义，避免注入。
+- **JSON 导出**：结构化 JSON（key 顺序固定、确定可复现），便于归档与二次处理。
+- **`/report` 页面**：从统一项目状态读取当前数据，预览报告并提供「下载 JSON / 下载 HTML」按钮；空态提示先载入示例或导入数据。校验页也提供「导出当前数据为完整报告 →」入口。
+- 浏览器端 `Blob` 下载（`src/lib/report/download.ts`），不依赖后端、不上传数据。
+
+> 报告导出为路线图终点；后续可在此之上扩展更多治理动作（如问题批量修复建议、跨版本对比等），但已不在 v0.1–v0.6 范围内。
 
 ### 技术说明（v0.5.0）
 
@@ -78,6 +88,7 @@ npm run dev
 #   - 点击「导入数据」进入 CSV / XLSX 导入与字段映射
 #   - 点击「校验数据」运行 15 条校验规则引擎并查看分级、可溯源问题清单
 #   - 点击「查看关系图」以关系图查看对象层级与引用，孤立对象会被高亮
+#   - 点击「导出报告」基于当前项目数据生成并下载 HTML / JSON 治理报告（v0.6.0）
 
 # 3. 或构建并以生产模式运行
 npm run build
@@ -101,7 +112,7 @@ npm run start
 ```
 twinflow-studio/
 ├── src/
-│   ├── app/                 # Next.js App Router（首页 / demo / import / validate / graph 页）
+│   ├── app/                 # Next.js App Router（首页 / demo / import / validate / graph / report 页）
 │   ├── components/          # UI 组件（数据表、计数、空/错误态、校验汇总/问题清单）
 │   ├── lib/
 │   │   ├── types.ts         # Zod 领域模型（Space/Asset/Sensor）
@@ -119,6 +130,7 @@ twinflow-studio/
 │   │   │   └── index.ts          # 对外出口
 │   │   ├── graph/           # v0.4.0 关系图：types / orphans（孤立识别）/ layout（确定性布局）
 │   │   ├── project/         # v0.4.0 项目状态与持久化：types / persist / ProjectProvider
+│   │   ├── report/          # v0.6.0 报告导出：types / build（聚合）/ exporters（JSON+HTML）/ download
 │   │   └── import/          # v0.2.0 导入：解析 / 目标字段 / 映射与校验
 │   │       ├── parse.ts          # CSV/XLSX → {sheets, rows}
 │   │       ├── fieldTargets.ts   # 目标字段定义与表头别名
