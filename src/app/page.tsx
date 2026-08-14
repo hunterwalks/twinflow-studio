@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.4.0</p>
+      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.5.0</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
         数字孪生数据建模与质量治理工作台
       </h1>
@@ -68,8 +68,9 @@ export default function HomePage() {
       </div>
 
       <p className="mt-10 text-xs text-slate-400">
-        当前为 v0.4.0：在 v0.3.0 校验引擎之上新增对象关系图（React Flow 渲染）、孤立 / 悬空对象
-        高亮，以及项目本地自动保存与恢复（关闭重开自动继续）。AI 建议与报告导出将在后续版本逐步开放。
+        当前为 v0.5.0：在 v0.4.0 对象关系图与项目保存恢复之上，新增确定性字段映射建议（置信度打分 +
+        模糊匹配）、数据质量评分（0–100 / 等级 A–E）与规则 / 治理建议。全部为纯函数、可离线、可测试，
+        无外部 AI 依赖。报告导出将在 v0.6.0 开放。
       </p>
     </main>
   );

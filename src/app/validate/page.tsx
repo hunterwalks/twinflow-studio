@@ -18,6 +18,10 @@ import {
 import { IssueTable } from "@/components/IssueTable";
 import { RuleSummaryTable } from "@/components/RuleSummaryTable";
 import { ValidationSummary } from "@/components/ValidationSummary";
+import { QualityScoreCard } from "@/components/QualityScoreCard";
+import { RuleRecommendations } from "@/components/RuleRecommendations";
+import { qualityScore } from "@/lib/quality/score";
+import { recommendRules } from "@/lib/quality/recommend";
 
 interface SampleOption {
   key: string;
@@ -74,6 +78,8 @@ export default function ValidatePage() {
 
   const sample = SAMPLES.find((s) => s.key === sampleKey) ?? SAMPLES[0];
   const report = useMemo(() => runRules(sample.dataset), [sample]);
+  const quality = useMemo(() => qualityScore(report), [report]);
+  const recommendations = useMemo(() => recommendRules(sample.dataset), [sample]);
 
   const filtered = useMemo(
     () => filterByTable(filterBySeverity(report.issues, severity), table),
@@ -124,9 +130,10 @@ export default function ValidatePage() {
         </p>
       </div>
 
-      {/* 汇总 */}
-      <div className="mt-6">
+      {/* 汇总 + 质量评分 */}
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
         <ValidationSummary report={report} />
+        <QualityScoreCard score={quality} />
       </div>
 
       {/* 类别分布 */}
@@ -145,6 +152,11 @@ export default function ValidatePage() {
       {/* 规则维度汇总 */}
       <div className="mt-6">
         <RuleSummaryTable rows={report.byRule} />
+      </div>
+
+      {/* 规则与治理建议 */}
+      <div className="mt-6">
+        <RuleRecommendations recommendations={recommendations} />
       </div>
 
       {/* 问题清单与筛选 */}

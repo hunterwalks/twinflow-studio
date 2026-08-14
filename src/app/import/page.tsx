@@ -15,10 +15,12 @@ import {
 } from "@/lib/import/fieldTargets";
 import {
   buildRecords,
-  suggestMapping,
+  suggestMappings,
   validateImport,
   type ImportOutcome,
   type Mapping,
+  type MappingMethod,
+  type MappingSuggestionSet,
 } from "@/lib/import/mapping";
 import { DataTable } from "@/components/DataTable";
 import { ErrorState } from "@/components/ErrorState";
@@ -26,8 +28,12 @@ import { EmptyState } from "@/components/EmptyState";
 import { ValidationSummary } from "@/components/ValidationSummary";
 import { RuleSummaryTable } from "@/components/RuleSummaryTable";
 import { IssueTable } from "@/components/IssueTable";
+import { QualityScoreCard } from "@/components/QualityScoreCard";
+import { RuleRecommendations } from "@/components/RuleRecommendations";
 import { makeDataset } from "@/lib/rules/dataset";
 import { runRules } from "@/lib/rules/engine";
+import { qualityScore, type QualityScore } from "@/lib/quality/score";
+import { recommendRules, type RuleRecommendation } from "@/lib/quality/recommend";
 import {
   TABLE_LABEL,
   type LooseRecord,
@@ -35,6 +41,13 @@ import {
   type ValidationReport,
 } from "@/lib/rules/types";
 import { useProject } from "@/lib/project/ProjectProvider";
+
+const METHOD_LABEL: Record<MappingMethod, string> = {
+  exact: "精确",
+  normalized: "归一",
+  fuzzy: "模糊",
+  none: "未匹配",
+};
 
 const PREVIEW_LIMIT = 50;
 
@@ -51,6 +64,8 @@ export default function ImportPage() {
   const [mapping, setMapping] = useState<Mapping>({});
   const [outcome, setOutcome] = useState<ImportOutcome | null>(null);
   const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
+  const [quality, setQuality] = useState<QualityScore | null>(null);
+  const [recommendations, setRecommendations] = useState<RuleRecommendation[]>([]);
   const { importTable } = useProject();
 
 const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
@@ -64,22 +79,31 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
     [parse, selectedSheet],
   );
 
+  // v0.5.0：确定性映射建议（置信度打分），用于自动映射与置信度展示
+  const suggestions: MappingSuggestionSet = useMemo(
+    () => suggestMappings(target, currentSheet?.headers ?? []),
+    [currentSheet, target],
+  );
+
   useEffect(() => {
     if (currentSheet) {
-      setMapping(suggestMapping(currentSheet.headers, target));
+      setMapping(suggestions.mapping);
       setOutcome(null);
     } else {
       setMapping({});
     }
     // 仅在表头或目标类型变化时重算默认映射，保留用户编辑
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSheet, target]);
+  }, [suggestions]);
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
     setBusy(true);
     setParse(null);
     setOutcome(null);
+    setValidationReport(null);
+    setQuality(null);
+    setRecommendations([]);
     setSelectedSheet(0);
     setFileName(file.name);
 
@@ -126,7 +150,11 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
     // 因数据不足会自动跳过，不会产生悬空引用误报。
     const dataset: RuleDataset = { spaces: [], assets: [], sensors: [] };
     dataset[PLURAL[target]] = records as LooseRecord[];
-    setValidationReport(runRules(makeDataset({ [PLURAL[target]]: dataset[PLURAL[target]] })));
+    const fullDataset = makeDataset({ [PLURAL[target]]: dataset[PLURAL[target]] });
+    const report = runRules(fullDataset);
+    setValidationReport(report);
+    setQuality(qualityScore(report));
+    setRecommendations(recommendRules(fullDataset));
     importTable(PLURAL[target], outcome.valid);
   }
 
@@ -134,6 +162,8 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
     setParse(null);
     setOutcome(null);
     setValidationReport(null);
+    setQuality(null);
+    setRecommendations([]);
     setFileName("");
     setSelectedSheet(0);
     setMapping({});
@@ -268,8 +298,21 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
 
               <p className="mt-2 text-xs text-slate-400">
                 将下方源列映射到「{TARGET_TYPES.find((t) => t.key === target)?.label}」的字段。
-                已按表头给出智能默认映射，可手动调整。
+                v0.5.0 起按表头做置信度打分的智能映射（精确 / 归一 / 模糊），高置信自动映射，低置信需复核。
               </p>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-slate-500">智能映射置信度：</span>
+                <span className="rounded bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                  高 {suggestions.high}
+                </span>
+                <span className="rounded bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                  中 {suggestions.medium}
+                </span>
+                <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+                  低/未匹配 {suggestions.low}
+                </span>
+              </div>
 
               <div className="mt-4 overflow-x-auto">
                 <table className="min-w-full border-collapse text-left text-sm">
@@ -292,18 +335,54 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
                           <span className="ml-2 text-xs text-slate-400">{f.key}</span>
                         </td>
                         <td className="px-4 py-2">
-                          <select
-                            value={sourceForTarget(mapping, f.key)}
-                            onChange={(e) => setTargetSource(f.key, e.target.value)}
-                            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700"
-                          >
-                            <option value="">— 不映射 —</option>
-                            {currentSheet.headers.map((h) => (
-                              <option key={h} value={h}>
-                                {h}
-                              </option>
-                            ))}
-                          </select>
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={sourceForTarget(mapping, f.key)}
+                              onChange={(e) => setTargetSource(f.key, e.target.value)}
+                              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700"
+                            >
+                              <option value="">— 不映射 —</option>
+                              {currentSheet.headers.map((h) => (
+                                <option key={h} value={h}>
+                                  {h}
+                                </option>
+                              ))}
+                            </select>
+                            {(() => {
+                              const sug = suggestions.suggestions.find((s) => s.target === f.key);
+                              if (!sug) return null;
+                              const selected = sourceForTarget(mapping, f.key);
+                              if (sug.source == null) {
+                                return (
+                                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                                    未匹配
+                                  </span>
+                                );
+                              }
+                              if (selected !== sug.source) {
+                                return (
+                                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                                    手动
+                                  </span>
+                                );
+                              }
+                              const tone =
+                                sug.method === "exact"
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : sug.method === "normalized"
+                                    ? "bg-teal-50 text-teal-700"
+                                    : "bg-amber-50 text-amber-700";
+                              return (
+                                <span className={`rounded px-1.5 py-0.5 text-xs ${tone}`}>
+                                  {METHOD_LABEL[sug.method]}
+                                  {sug.method !== "exact" && sug.score > 0
+                                    ? ` ${(sug.score * 100).toFixed(0)}%`
+                                    : ""}
+                                  {sug.needsReview ? " · 需复核" : ""}
+                                </span>
+                              );
+                            })()}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -385,6 +464,13 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
                 title="问题清单（按级别 → 表 → 行号排序，已排除跨表跳过项）"
                 issues={validationReport.issues}
               />
+
+              {quality && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <QualityScoreCard score={quality} />
+                  <RuleRecommendations recommendations={recommendations} />
+                </div>
+              )}
             </div>
           )}
         </div>
