@@ -2,6 +2,26 @@
 
 所有重要变更记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循 [SemVer](https://semver.org/)。
 
+## [0.7.0] - 2026-08-16（候选）
+
+> 公开 Beta 与可用性基线：在不增加数字孪生业务范围的前提下，把 v0.6.0 从「构建与单测通过」提升为「普通用户可直接访问、能按引导完成一次完整 Demo、失败后知道如何恢复」的 Beta。
+
+### Added
+- **公开静态托管（GitHub Pages）**：`next.config.mjs` 条件式静态导出（`EXPORT=true` + `BASE_PATH` → `out/`），新增 `.github/workflows/deploy.yml` 自动部署；local-first 不变（CSV/XLSX 仍在浏览器内解析，不上传业务后端）。
+- **Playwright E2E**：新增 `.github/workflows/ci.yml` 全量质量门（typecheck / lint / test / build / E2E）；`e2e/flows.spec.ts` 覆盖 9 条主流程，全部使用 `data-testid` 稳定定位。
+- **新手引导 / 隐私 / 错误恢复**：首页「5 步上手」与「数据在本地处理」说明；全局 `StorageBanner` 在 localStorage 不可用时给出原因与恢复动作；空/错误态给出明确原因与下一步；新增 `PRIVACY.md`。
+- **两套城市基础设施合成数据**：「城市基础设施（干净）」与「城市基础设施（含问题）」，统一收口到 `src/lib/data/registry.ts`，Demo / 校验页 / E2E 共用；干净基线用于确认无规则误报。
+- **ESLint CLI 迁移**：`.eslintrc.json` → `eslint.config.mjs`（FlatCompat extends `next/core-web-vitals` + `next/typescript`），消除 `next lint` 弃用警告；`lint` 脚本改为 `ESLINT_USE_FLAT_CONFIG=true eslint .`。
+- 新增依赖：`@eslint/eslintrc`、`@playwright/test`。
+
+### Changed
+- 版本号升至 v0.7.0；首页、README、CHANGELOG 同步更新。
+- `src/lib/loadDemo.ts` 的 `DemoResult.success.data` 由 `IndustrialPark` 收敛为统一的 `DemoDataset`（宽松记录），Demo / 校验页 / E2E 共用注册表。
+
+### Quality
+- 新增 E2E 9 条主流程；`loadDemo` 单测补充城市基础设施数据集用例。
+- 既有单元测试保持不变；全仓测试数与四道质量门结果见交付记录 `Run_Record.md` / `Validation.md`。
+
 ## [0.6.0] - 2026-08-14（候选）
 
 > 路线图 v0.1–v0.6 收官版本：在 v0.5.0 之上新增数据治理报告导出（HTML / JSON）。local-first、可离线、纯确定性。

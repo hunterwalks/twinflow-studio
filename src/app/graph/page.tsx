@@ -122,11 +122,12 @@ export default function GraphPage() {
         </div>
         <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">对象关系图</h1>
         <div className="mt-6">
-          <EmptyState message="当前没有可可视化的项目数据。" />
+          <EmptyState testid="graph-empty" message="当前没有可可视化的项目数据。" />
           <div className="mt-4 flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={loadDemo}
+              data-testid="graph-load-demo"
+              onClick={() => loadDemo()}
               className="rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
             >
               加载内置 Demo
@@ -151,7 +152,7 @@ export default function GraphPage() {
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">对象关系图</h1>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-xs text-slate-500">
+          <span data-testid="graph-stats" className="text-xs text-slate-500">
             节点 {model.nodes.length} · 连线 {model.edges.length} · 孤立 {isolatedCount}
           </span>
           <label className="flex items-center gap-2 text-sm text-slate-600">
@@ -165,6 +166,7 @@ export default function GraphPage() {
           </label>
           <button
             type="button"
+            data-testid="graph-clear"
             onClick={clear}
             className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50"
           >
@@ -177,7 +179,7 @@ export default function GraphPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_280px]">
-        <div className="h-[640px] overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+        <div data-testid="graph-canvas" className="h-[640px] overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
           <ReactFlow
             nodes={nodes}
             edges={edges}

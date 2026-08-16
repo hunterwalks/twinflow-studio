@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import type { LooseRecord } from "@/lib/rules/types";
-import { industrialPark } from "@/lib/data/industrialPark";
+import { getDemoDataset } from "@/lib/data/registry";
 import type { ProjectState, TableKey } from "./types";
 import { EMPTY_PROJECT } from "./types";
 import { clearProject, loadProject, saveProject } from "./persist";
@@ -19,7 +19,10 @@ import { clearProject, loadProject, saveProject } from "./persist";
 interface ProjectContextValue {
   state: ProjectState;
   isEmpty: boolean;
-  loadDemo: () => void;
+  /** localStorage 不可用时给出原因与恢复动作，否则为 null。 */
+  storageWarning: string | null;
+  /** 加载示例数据集到项目；不传 key 时加载默认数据集。 */
+  loadDemo: (key?: string) => void;
   /** 写入单张表（合并保留其他表）；用于 /import 逐表导入累积成项目。 */
   importTable: (table: TableKey, records: LooseRecord[]) => void;
   clear: () => void;
@@ -27,17 +30,9 @@ interface ProjectContextValue {
 
 const ProjectContext = createContext<ProjectContextValue | null>(null);
 
-/** 将任意记录数组转为宽松字符串记录（null → ""），对齐模型语义。 */
-function toLoose<T extends Record<string, unknown>>(rows: T[]): LooseRecord[] {
-  return rows.map((r) =>
-    Object.fromEntries(
-      Object.entries(r).map(([k, v]) => [k, v == null ? "" : String(v)]),
-    ),
-  ) as LooseRecord[];
-}
-
 export function ProjectProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ProjectState>(EMPTY_PROJECT);
+  const [storageWarning, setStorageWarning] = useState<string | null>(null);
   // 仅当用户主动操作后才持久化，避免挂载水合用空态覆盖已存数据。
   const touchedRef = useRef(false);
 
@@ -47,20 +42,36 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     if (saved) setState(saved);
   }, []);
 
+  // 探测 localStorage 可用性（隐私模式 / 禁用站点数据时会抛错）
+  useEffect(() => {
+    try {
+      const probe = "__twinflow_probe__";
+      const s = globalThis.localStorage;
+      s.setItem(probe, "1");
+      s.removeItem(probe);
+      setStorageWarning(null);
+    } catch {
+      setStorageWarning(
+        "当前浏览器禁用了本地存储（localStorage），项目数据将无法在刷新后自动恢复。请检查浏览器的隐私 / 站点设置，或在允许本地存储的浏览器中打开本应用。",
+      );
+    }
+  }, []);
+
   // 仅在用户动作后保存
   useEffect(() => {
     if (!touchedRef.current) return;
     saveProject(state);
   }, [state]);
 
-  const loadDemo = useCallback(() => {
+  const loadDemo = useCallback((key?: string) => {
     touchedRef.current = true;
+    const ds = getDemoDataset(key);
     setState({
       version: 1,
       source: "demo",
-      spaces: toLoose(industrialPark.spaces),
-      assets: toLoose(industrialPark.assets),
-      sensors: toLoose(industrialPark.sensors),
+      spaces: ds.spaces,
+      assets: ds.assets,
+      sensors: ds.sensors,
       updatedAt: new Date().toISOString(),
     });
   }, []);
@@ -87,8 +98,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     state.spaces.length === 0 && state.assets.length === 0 && state.sensors.length === 0;
 
   const value = useMemo<ProjectContextValue>(
-    () => ({ state, isEmpty, loadDemo, importTable, clear }),
-    [state, isEmpty, loadDemo, importTable, clear],
+    () => ({ state, isEmpty, storageWarning, loadDemo, importTable, clear }),
+    [state, isEmpty, storageWarning, loadDemo, importTable, clear],
   );
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;

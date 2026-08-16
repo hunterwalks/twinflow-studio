@@ -50,10 +50,10 @@ export default function ReportPage() {
         <p className="text-sm font-medium text-brand-600">TwinFlow Studio · 报告导出</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">数据治理报告导出</h1>
         <div className="mt-8">
-          <EmptyState message="当前没有可导出的数据。请先载入内置 Demo 数据，或在「导入数据」中导入你的表格，再回到此处导出 HTML / JSON 报告。" />
+          <EmptyState testid="report-empty" message="当前没有可导出的数据。请先载入内置 Demo 数据，或在「导入数据」中导入你的表格，再回到此处导出 HTML / JSON 报告。" />
         </div>
         <div className="mt-6 flex gap-3">
-          <button type="button" className={btn(true)} onClick={loadDemo}>
+          <button type="button" data-testid="report-load-demo" className={btn(true)} onClick={() => loadDemo()}>
             载入示例数据
           </button>
           <Link href="/import" className={btn(false)}>
@@ -85,10 +85,10 @@ export default function ReportPage() {
       </p>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <button type="button" className={btn(true)} onClick={exportJSON}>
+        <button type="button" data-testid="report-download-json" className={btn(true)} onClick={exportJSON}>
           下载 JSON
         </button>
-        <button type="button" className={btn(false)} onClick={exportHTML}>
+        <button type="button" data-testid="report-download-html" className={btn(false)} onClick={exportHTML}>
           下载 HTML
         </button>
         <Link href="/validate" className="ml-auto text-sm text-slate-500 hover:text-slate-700">

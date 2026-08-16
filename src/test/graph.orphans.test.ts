@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import type { LooseRecord } from "@/lib/rules/types";
 import { detectOrphans } from "@/lib/graph/orphans";
 import type { GraphDataset } from "@/lib/graph/types";
 

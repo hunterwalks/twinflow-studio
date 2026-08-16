@@ -28,7 +28,6 @@ export function detectOrphans(data: GraphDataset): OrphanResult {
 
   const spaceIds = new Set(data.spaces.map((r) => get(r, "id")).filter(Boolean));
   const assetIds = new Set(data.assets.map((r) => get(r, "id")).filter(Boolean));
-  const sensorIds = new Set(data.sensors.map((r) => get(r, "id")).filter(Boolean));
 
   const spacesEmpty = spaceIds.size === 0;
   const assetsEmpty = assetIds.size === 0;

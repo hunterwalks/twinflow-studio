@@ -21,7 +21,7 @@ function Card({ tone, label, value }: { tone: string; label: string; value: stri
 export function ValidationSummary({ report }: { report: ValidationReport }) {
   const clean = report.totals.all === 0;
   return (
-    <div className="space-y-3">
+    <div data-testid="validation-summary" className="space-y-3">
       <div className="flex flex-wrap gap-3">
         <Card tone="error" label={SEVERITY_LABEL.error} value={report.totals.error} />
         <Card tone="warning" label={SEVERITY_LABEL.warning} value={report.totals.warning} />

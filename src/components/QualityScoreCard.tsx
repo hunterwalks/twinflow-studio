@@ -23,7 +23,7 @@ function barColor(worst: Severity | null): string {
 /** 数据质量评分卡片：总分 / 等级 / 按维度明细 / 主要扣分项。 */
 export function QualityScoreCard({ score }: { score: QualityScore }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <div data-testid="quality-score" className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-slate-700">数据质量评分</h2>
         <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${GRADE_TONE[score.grade]}`}>

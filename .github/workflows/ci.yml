@@ -1,0 +1,92 @@
+# TwinFlow Studio CI：在候选提交上跑全量质量门。
+# 覆盖：typecheck / lint (ESLint CLI) / 单元测试 (vitest) / 生产构建 / Playwright E2E。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint (ESLint CLI)
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Production build
+        env:
+          NODE_OPTIONS: "--use-system-ca"
+        run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E
+        env:
+          NODE_OPTIONS: "--use-system-ca"
+        run: npm run test:e2e
+
+      # 截图证据：在干净 Linux 环境下构建并用生产服务器截图，作为交付物附件。
+      - name: Production build (for screenshots)
+        env:
+          NODE_OPTIONS: "--use-system-ca"
+        run: npm run build
+
+      - name: Start production server
+        run: npm run start &
+
+      - name: Wait for server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep -q 200; then
+              echo "server ready"; break
+            fi
+            sleep 1
+          done
+
+      - name: Capture screenshots
+        run: node scripts/capture-screenshots.mjs
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v0.7.0-screenshots
+          path: screenshots/
+          retention-days: 30

@@ -1,0 +1,60 @@
+# Deploy TwinFlow Studio to GitHub Pages (static export).
+# 触发：推送到 main 分支，或手动 workflow_dispatch。
+# 说明：v0.7.0 起支持静态导出（EXPORT=true + BASE_PATH），产物为 out/。
+# 回退：在仓库 Settings → Pages 将 source 改回历史部署，或重新运行此前成功的 workflow run。
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只允许一个 Pages 部署；新提交会取消进行中的旧部署。
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build static export
+        # BASE_PATH 与仓库名一致：https://<user>.github.io/twinflow-studio/
+        env:
+          EXPORT: "true"
+          BASE_PATH: "/twinflow-studio"
+          NODE_OPTIONS: "--use-system-ca"
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

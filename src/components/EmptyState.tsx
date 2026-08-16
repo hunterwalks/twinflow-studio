@@ -1,11 +1,13 @@
 interface EmptyStateProps {
   message?: string;
+  /** 稳定定位符，便于 E2E 检测空态。默认 "empty-state"。 */
+  testid?: string;
 }
 
 /** 空状态提示：用于数据集为空或筛选无结果时。 */
-export function EmptyState({ message }: EmptyStateProps) {
+export function EmptyState({ message, testid = "empty-state" }: EmptyStateProps) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white px-6 py-10 text-center">
+    <div data-testid={testid} className="rounded-lg border border-dashed border-slate-300 bg-white px-6 py-10 text-center">
       <div className="text-3xl" aria-hidden>🗂️</div>
       <p className="mt-3 text-sm font-medium text-slate-600">暂无数据</p>
       <p className="mt-1 text-sm text-slate-400">

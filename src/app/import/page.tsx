@@ -208,6 +208,7 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <input
             id="file-input"
+            data-testid="import-file"
             type="file"
             accept=".csv,.xlsx,.xls"
             className="block w-full max-w-sm text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-brand-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-700"
@@ -392,6 +393,7 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
 
               <button
                 type="button"
+                data-testid="import-confirm"
                 onClick={onConfirm}
                 className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
               >

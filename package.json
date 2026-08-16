@@ -1,16 +1,17 @@
 {
   "name": "twinflow-studio",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
-  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.6.0: report export HTML/JSON, deterministic mapping suggestions, data quality score 0-100, rule recommendations).",
+  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.7.0: public static Beta, Playwright E2E, onboarding/privacy/error recovery, two extra synthetic datasets, ESLint CLI, CI).",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "node -e \"process.env.ESLINT_USE_FLAT_CONFIG='true'; require('node:child_process').execSync('eslint .', { stdio: 'inherit' })\"",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@xyflow/react": "^12.11.3",
@@ -22,6 +23,8 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@playwright/test": "^1.48.0",
     "@types/node": "^22.10.0",
     "@types/papaparse": "^5.3.15",
     "@types/react": "^19.0.0",

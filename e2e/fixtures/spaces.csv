@@ -1,0 +1,7 @@
+﻿id,name,type,parentId,description
+SP-101,滨江智慧城区,park,,城市级根空间对象
+SP-102,A座综合楼,building,SP-101,城区内A座综合楼
+SP-103,B座能源中心,building,SP-101,城区内B座能源中心
+SP-104,A座一层,floor,SP-102,A座综合楼一层
+SP-105,A座二层,floor,SP-102,A座综合楼二层
+SP-106,B座一层,floor,SP-103,B座能源中心一层

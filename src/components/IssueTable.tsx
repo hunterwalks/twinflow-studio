@@ -13,7 +13,7 @@ interface IssueTableProps {
 export function IssueTable({ title, issues, limit = 200 }: IssueTableProps) {
   const shown = issues.slice(0, limit);
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+    <section data-testid="issue-table" className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">{title}</h3>
         <span className="text-xs text-slate-400">{issues.length} 条</span>

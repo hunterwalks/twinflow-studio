@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { industrialPark } from "@/lib/data/industrialPark";
 import { messyPark, rootlessSpaces } from "@/lib/data/messyPark";
+import { cityInfraClean } from "@/lib/data/cityInfraClean";
+import { cityInfraProblem } from "@/lib/data/cityInfraProblem";
 import { toRuleDataset } from "@/lib/rules/dataset";
 import { filterBySeverity, filterByTable, runRules } from "@/lib/rules/engine";
 import {
@@ -38,10 +40,22 @@ const SAMPLES: SampleOption[] = [
     dataset: toRuleDataset(industrialPark),
   },
   {
+    key: "city-clean",
+    label: "城市基础设施（干净）",
+    note: "v0.7.0 新增：结构完整、引用闭合、量纲一致，验证干净数据零误报。",
+    dataset: toRuleDataset(cityInfraClean),
+  },
+  {
     key: "messy",
     label: "含问题样例",
     note: "合成脏数据，用于演示各类规则的实际命中效果与溯源信息。",
     dataset: messyPark,
+  },
+  {
+    key: "city-problem",
+    label: "城市基础设施（含问题）",
+    note: "v0.7.0 新增：城市基础设施场景下的典型脏数据，用于验证规则与报告。",
+    dataset: cityInfraProblem,
   },
   {
     key: "rootless",
@@ -117,6 +131,7 @@ export default function ValidatePage() {
             <button
               key={s.key}
               type="button"
+              data-testid={`validate-sample-${s.key}`}
               onClick={() => setSampleKey(s.key)}
               className={pill(s.key === sampleKey)}
             >
