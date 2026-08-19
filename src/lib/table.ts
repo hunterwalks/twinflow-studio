@@ -72,3 +72,13 @@ export const SENSOR_COLUMNS: Column[] = [
   { key: "unit", header: "单位" },
   { key: "description", header: "描述" },
 ];
+
+export const OBSERVATION_COLUMNS: Column[] = [
+  { key: "id", header: "ID" },
+  { key: "sensorId", header: "测点ID" },
+  { key: "timestamp", header: "时间戳" },
+  { key: "value", header: "观测值" },
+  { key: "quantity", header: "量测" },
+  { key: "unit", header: "单位" },
+  { key: "quality", header: "质量" },
+];

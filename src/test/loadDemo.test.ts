@@ -38,7 +38,8 @@ describe("Demo 加载状态机", () => {
     expect(c.spaces).toBe(industrialPark.spaces.length);
     expect(c.assets).toBe(industrialPark.assets.length);
     expect(c.sensors).toBe(industrialPark.sensors.length);
-    expect(c.total).toBe(c.spaces + c.assets + c.sensors);
+    expect(c.observations).toBe(0);
+    expect(c.total).toBe(c.spaces + c.assets + c.sensors + c.observations);
   });
 
   it("两套城市基础设施数据集均可被加载", () => {

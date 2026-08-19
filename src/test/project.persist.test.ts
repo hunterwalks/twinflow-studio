@@ -25,11 +25,12 @@ class MemStorage {
 }
 
 const sample: ProjectState = {
-  version: 1,
+  version: 2,
   source: "demo",
   spaces: [{ id: "SP-1", name: "园区", type: "park", parentId: "", description: "" }],
   assets: [],
   sensors: [],
+  observations: [],
   updatedAt: "2026-08-13T00:00:00.000Z",
 };
 
@@ -62,7 +63,7 @@ describe("项目持久化 persist", () => {
   it("版本不符返回 null", () => {
     (globalThis as unknown as { localStorage: Storage }).localStorage.setItem(
       "twinflow-project-v1",
-      JSON.stringify({ version: 2, source: "demo", spaces: [], assets: [], sensors: [], updatedAt: "" }),
+      JSON.stringify({ version: 99, source: "demo", spaces: [], assets: [], sensors: [], observations: [], updatedAt: "" }),
     );
     expect(loadProject()).toBeNull();
   });

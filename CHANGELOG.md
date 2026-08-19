@@ -2,7 +2,29 @@
 
 所有重要变更记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循 [SemVer](https://semver.org/)。
 
-## [0.7.0] - 2026-08-16（候选）
+## [0.8.0] - 2026-08-19（候选）
+
+> 路线图阶段 A：用完整项目而非单张表工作。在 v0.7.0 的四道质量门（typecheck / lint / test / build）+ E2E 之上，把「单表导入 / 单数据集校验」提升为「以四表项目为单位的建模、保存、迁移与复用」。不引入 AI / 后端，复用既有校验、质量、报告与导入引擎。
+
+### Added
+- **四表项目模型（Space / Asset / Sensor / Observation）**：新增 **Observation（观测）** 表（`sensorId` + `timestamp` + `value` + 可选 `quantity` / `unit` / `quality`）；统一项目状态 `ProjectState` 升至 **v2**，`localStorage` 键保持 `twinflow-project-v1`，以 `version` 字段区分。
+- **项目 JSON 导入 / 导出**（`src/lib/project/io.ts` + `/project` 页面）：将整个项目（四表 + 元数据）导出为确定性 JSON，再导入时**整体覆盖**当前项目并持久化；浏览器端 `Blob` 下载，不联网、不上传。
+- **导入映射模板复用**（`src/lib/import/templates.ts`）：在 `/import` 页把当前列→字段映射存为命名模板（`localStorage` 键 `twinflow-mapping-templates`），下次一键套用 / 编辑 / 删除，跨会话可用。
+- **v1 → v2 迁移**（`src/lib/project/persist.ts` 的 `migrateProjectV1ToV2`）：旧版三表项目（v1）自动补 `observations: []` 升级为 v2，保留既有空间 / 资产 / 测点；非预期结构回退空项目，不抛错。
+- **Observation 专属校验规则 R016–R019**（纯函数、确定性、可溯源）：R016 Observation→Sensor 引用完整性（error，Sensor 表空时跳过并标注）、R017 观测时间非法（warning）、R018 观测值非法（error）、R019 同测点重复时间戳（warning）。规则总数 **15 → 19**。
+- **Demo / 校验 / 报告四表贯通**：城市基础设施（干净）补 8 条合法观测（引用 SE-101~SE-108，零误报基线）；城市基础设施（含问题）补覆盖 R016–R019 的脏观测；`/demo` 新增 Observation 标签、`ObjectCounts` 增加观测计数卡、`/validate` 记录数与数据集引入 observations、`/report` 记录数汇总含观测。
+- 新增 `src/lib/version.ts`（单一 `APP_VERSION` 常量，首页与版本文案统一引用，避免漂移）。
+
+### Changed
+- 版本号升至 v0.8.0；首页、README、CHANGELOG 同步更新。
+- `cityInfraClean` 数据集由 `IndustrialPark` 调整为与 `cityInfraProblem` / `messyPark` 一致的 `RuleDataset`（含 `observations`），确保干净基线零误报且校验页直接消费。
+
+### Quality
+- 新增 12 项测试：项目 IO 往返（`project.io.test.ts`：导出→导入确定性、覆盖式写入、`version` 透传、非法 JSON 安全失败）；导入映射模板（`import.templates.test.ts`：保存 / 列出 / 套用 / 删除、覆盖同名、localStorage 容错）；v1→v2 迁移用例已在 `project.persist.test.ts` 补全。
+- 既有规则数断言由 15 → 19；`ObjectCounts` 卡片加 `data-testid` 便于 E2E 断言；新增 `e2e/v08.spec.ts` 覆盖 v0.8 流程（Observation 导入、项目 JSON 导出→再导入、保存→重开→恢复、映射模板、旧项目迁移）。
+- 全仓测试数与五道质量门（typecheck / lint / test / build / E2E）结果见交付记录 `Run_Record.md` / `Validation.md`。
+
+## [0.7.0] - 2026-08-16（已发布）
 
 > 公开 Beta 与可用性基线：在不增加数字孪生业务范围的前提下，把 v0.6.0 从「构建与单测通过」提升为「普通用户可直接访问、能按引导完成一次完整 Demo、失败后知道如何恢复」的 Beta。
 

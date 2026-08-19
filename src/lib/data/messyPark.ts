@@ -24,6 +24,7 @@ import type { RuleDataset } from "../rules/types";
  * - 全表无 parentId 为空的根空间由另一个样例演示（R012），此处保留 SP-001 作为根
  */
 export const messyPark: RuleDataset = {
+  observations: [],
   spaces: [
     {
       id: "SP-001",
@@ -180,6 +181,7 @@ export const messyPark: RuleDataset = {
  * 所有空间都有父级，缺少层级入口。
  */
 export const rootlessSpaces: RuleDataset = {
+  observations: [],
   spaces: [
     {
       id: "SP-910",

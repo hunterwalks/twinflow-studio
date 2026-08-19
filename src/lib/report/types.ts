@@ -9,11 +9,12 @@ import type { RuleDataset, ValidationReport } from "@/lib/rules/types";
 import type { QualityScore } from "@/lib/quality/score";
 import type { RuleRecommendation } from "@/lib/quality/recommend";
 
-/** 三表记录数汇总。 */
+/** 四表记录数汇总（v0.8.0 起含观测 Observation）。 */
 export interface ReportRecordCount {
   spaces: number;
   assets: number;
   sensors: number;
+  observations: number;
   total: number;
 }
 

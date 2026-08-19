@@ -27,6 +27,7 @@ export const ALL_FIELDS: Record<TableName, string[]> = {
   space: ["id", "name", "type", "parentId", "description"],
   asset: ["id", "name", "type", "spaceId", "description"],
   sensor: ["id", "name", "assetId", "quantity", "unit", "description"],
+  observation: ["id", "sensorId", "timestamp", "value", "quantity", "unit", "quality"],
 };
 
 /**
@@ -37,6 +38,7 @@ export const REQUIRED_FIELDS: Record<TableName, string[]> = {
   space: ["id", "name", "type"],
   asset: ["id", "name", "type", "spaceId"],
   sensor: ["id", "name", "assetId", "quantity", "unit"],
+  observation: ["sensorId", "timestamp", "value"],
 };
 
 /** 跨表引用定义。 */
@@ -64,6 +66,7 @@ export const SIBLING_GROUP_FIELD: Record<TableName, string> = {
   space: "parentId",
   asset: "spaceId",
   sensor: "assetId",
+  observation: "sensorId",
 };
 
 /** 空间类型枚举（与 SpaceTypeEnum 一致）及其层级深度。 */

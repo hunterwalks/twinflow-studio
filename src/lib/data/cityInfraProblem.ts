@@ -23,6 +23,14 @@ import type { RuleDataset } from "../rules/types";
  * - SE-201 量纲温度 / 单位 kPa 不匹配（R015）
  */
 export const cityInfraProblem: RuleDataset = {
+  observations: [
+    { id: "OB-201", sensorId: "SE-999", timestamp: "2026-08-10T10:00:00Z", value: "23.5" },
+    { id: "OB-202", sensorId: "SE-202", timestamp: "not-a-date", value: "12" },
+    { id: "OB-203", sensorId: "SE-202", timestamp: "2026-08-10T11:00:00Z", value: "abc" },
+    { id: "OB-204", sensorId: "SE-202", timestamp: "2026-08-10T12:00:00Z", value: "10" },
+    { id: "OB-205", sensorId: "SE-202", timestamp: "2026-08-10T12:00:00Z", value: "11" },
+    { id: "OB-206", sensorId: "SE-201", timestamp: "2026-08-10T13:00:00Z", value: "25.3" },
+  ],
   spaces: [
     { id: "SP-201", name: "滨江智慧城区", type: "park", parentId: "", description: "城市级根空间对象" },
     { id: "SP-202", name: "A 座能源楼", type: "building", parentId: "SP-201", description: "城区内 A 座能源楼" },

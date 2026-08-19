@@ -43,7 +43,7 @@ const SAMPLES: SampleOption[] = [
     key: "city-clean",
     label: "城市基础设施（干净）",
     note: "v0.7.0 新增：结构完整、引用闭合、量纲一致，验证干净数据零误报。",
-    dataset: toRuleDataset(cityInfraClean),
+    dataset: cityInfraClean,
   },
   {
     key: "messy",
@@ -77,6 +77,7 @@ const TABLE_FILTERS: { key: TableName | "all"; label: string }[] = [
   { key: "space", label: TABLE_LABEL.space },
   { key: "asset", label: TABLE_LABEL.asset },
   { key: "sensor", label: TABLE_LABEL.sensor },
+  { key: "observation", label: TABLE_LABEL.observation },
 ];
 
 function pill(active: boolean): string {
@@ -101,7 +102,10 @@ export default function ValidatePage() {
   );
 
   const recordCount =
-    sample.dataset.spaces.length + sample.dataset.assets.length + sample.dataset.sensors.length;
+    sample.dataset.spaces.length +
+    sample.dataset.assets.length +
+    sample.dataset.sensors.length +
+    sample.dataset.observations.length;
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
@@ -141,7 +145,8 @@ export default function ValidatePage() {
         </div>
         <p className="mt-3 text-xs text-slate-400">
           {sample.note} 当前数据集共 {recordCount} 条记录（空间 {sample.dataset.spaces.length} / 设备{" "}
-          {sample.dataset.assets.length} / 测点 {sample.dataset.sensors.length}）。
+          {sample.dataset.assets.length} / 测点 {sample.dataset.sensors.length} / 观测{" "}
+          {sample.dataset.observations.length}）。
         </p>
       </div>
 

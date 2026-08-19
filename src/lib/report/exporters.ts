@@ -94,7 +94,7 @@ export function toHTML(report: TwinFlowReport): string {
 <div class="page">
   <h1>TwinFlow Studio 数据质量治理报告</h1>
   <p class="meta">生成时间：${esc(meta.generatedAt)} · 数据来源：${esc(meta.source)} · 工具版本：${esc(meta.version)}</p>
-  <p class="meta">记录数：空间 ${meta.recordCount.spaces} · 设备 ${meta.recordCount.assets} · 测点 ${meta.recordCount.sensors} · 合计 ${meta.recordCount.total}</p>
+  <p class="meta">记录数：空间 ${meta.recordCount.spaces} · 设备 ${meta.recordCount.assets} · 测点 ${meta.recordCount.sensors} · 观测 ${meta.recordCount.observations} · 合计 ${meta.recordCount.total}</p>
 
   <h2>数据质量评分</h2>
   <div class="score"><span class="big">${quality.score}</span><span>/ 100</span><span class="grade">等级 ${quality.grade}</span></div>

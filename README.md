@@ -4,11 +4,11 @@
 
 TwinFlow Studio 面向数字孪生产品、解决方案、实施和数据人员，帮助在项目早期从 Excel / CSV 资产资料中识别业务对象、建立空间与设备关系、检查数据质量并形成可追溯治理报告。
 
-**当前版本：v0.7.0（公开静态 Beta：GitHub Pages 托管 + Playwright E2E + 新手引导/隐私/错误恢复 + 两套城市基础设施合成数据 + ESLint CLI + CI 质量门）**
+**当前版本：v0.8.0（用完整项目而非单张表工作：四表项目模型 + Observation + 项目 JSON 导入/导出 + 导入映射模板复用 + v1→v2 迁移 + 19 条确定性规则）**
 
-- 产品定位与边界见 `02_Context/Project_Context.md` 与 `02_Context/Roadmap_V0.1-V0.6.md`
+- 产品定位与边界见 `02_Context/Project_Context.md` 与 `02_Context/Roadmap_V0.7-V2.0.md`
 - 执行交接见根目录 `WORKBUDDY_HY3_HANDOFF.md`
-- 本仓库当前只承载 v0.1.0–v0.7.0 范围，不提前实现后续版本功能（v0.8+ 见 Roadmap）
+- 本仓库当前只承载 v0.1.0–v0.8.0 范围，不提前实现后续版本功能（v0.9+ 见 Roadmap）
 
 ## v0.1.0 能力范围
 
@@ -79,6 +79,23 @@ TwinFlow Studio 面向数字孪生产品、解决方案、实施和数据人员�
 - **ESLint CLI 迁移**：从 `.eslintrc.json`（legacy）迁移到 `eslint.config.mjs`（FlatCompat extends `next/core-web-vitals` + `next/typescript`），消除 `next lint` 弃用警告；`lint` 脚本改为 `ESLINT_USE_FLAT_CONFIG=true eslint .`。
 - **新增依赖**：`@eslint/eslintrc`（ESLint Flat Config 兼容）、`@playwright/test`（E2E，浏览器端）。
 
+## v0.8.0 新增：用完整项目而非单张表工作
+
+> 路线图阶段 A 的核心能力：把 v0.7.0 的「单表导入 / 单数据集校验」提升为「以四表项目为单位的建模、保存、迁移与复用」。不引入 AI / 后端，复用既有校验、质量、报告与导入引擎。
+
+- **四表项目模型（Space / Asset / Sensor / Observation）**：在既有三表之上新增 **Observation（观测）** 表，承载测点的时序观测值（`sensorId` + `timestamp` + `value` + 可选 `quantity` / `unit` / `quality`）；统一项目状态 `ProjectState` 升至 **v2**，`localStorage` 键保持 `twinflow-project-v1`，通过 `version` 字段区分。
+- **项目 JSON 导入 / 导出**（`src/lib/project/io.ts` + `/project` 页面）：将整个项目（四表 + 元数据）导出为确定性的 JSON 文件，再导入时**整体覆盖**当前项目并持久化；浏览器端 `Blob` 下载，不联网、不上传。
+- **导入映射模板复用**（`src/lib/import/templates.ts`）：在 `/import` 页把当前列→字段映射存为命名模板（存 `localStorage` 键 `twinflow-mapping-templates`），下次选同构文件时一键套用、编辑或删除，跨会话可用。
+- **v1 → v2 迁移**（`src/lib/project/persist.ts` 的 `migrateProjectV1ToV2`）：旧版三表项目（v1）自动补 `observations: []` 升级为 v2，保留既有空间 / 资产 / 测点，刷新后无缝恢复；非预期结构回退空项目，不抛错。
+- **Observation 专属校验规则 R016–R019**（纯函数、确定性、可溯源）：
+  - **R016** Observation→Sensor 引用完整性（error，被引用 Sensor 表为空时自动跳过并标注原因，防跨表假阳性）；
+  - **R017** 观测时间非法（warning，`Date.parse` 非有限或空）；
+  - **R018** 观测值非法（error，`Number` 非有限或空）；
+  - **R019** 同测点重复时间戳（warning，按 `sensorId + timestamp` 组合键计数 > 1）。
+  - 规则总数由 **15 → 19**。
+- **Demo / 校验 / 报告四表贯通**：城市基础设施（干净）数据集补充 8 条合法观测（引用 SE-101~SE-108，零误报基线）；城市基础设施（含问题）数据集补充覆盖 R016–R019 的脏观测；`/demo` 新增 Observation 标签页，`ObjectCounts` 增加观测计数卡，`/validate` 记录数与数据集引入 observations，`/report` 记录数汇总包含观测。
+- 版本号升至 v0.8.0；首页、README、CHANGELOG 同步更新。
+
 ### 技术说明（v0.5.0）
 
 - 映射建议、质量评分、规则建议均为 **纯函数、确定性、无 AI / 无网络**，与 v0.1–v0.4 的 local-first 设计一致，可直接单元测试。
@@ -107,7 +124,7 @@ npm run dev
 # 打开 http://localhost:3000
 #   - 点击「从 Demo 开始」进入合成工业园区 Demo
 #   - 点击「导入数据」进入 CSV / XLSX 导入与字段映射
-#   - 点击「校验数据」运行 15 条校验规则引擎并查看分级、可溯源问题清单
+#   - 点击「校验数据」运行 19 条校验规则引擎并查看分级、可溯源问题清单
 #   - 点击「查看关系图」以关系图查看对象层级与引用，孤立对象会被高亮
 #   - 点击「导出报告」基于当前项目数据生成并下载 HTML / JSON 治理报告
 
@@ -136,30 +153,31 @@ npm run start
 ```
 twinflow-studio/
 ├── src/
-│   ├── app/                 # Next.js App Router（首页 / demo / import / validate / graph / report 页）
+│   ├── app/                 # Next.js App Router（首页 / demo / import / validate / graph / report / project 页）
 │   ├── components/          # UI 组件（数据表、计数、空/错误态、校验汇总/问题清单）
 │   ├── lib/
-│   │   ├── types.ts         # Zod 领域模型（Space/Asset/Sensor）
-│   │   ├── data/            # 合成工业园区 fixture（含问题样例）
-│   │   ├── loadDemo.ts      # Demo 加载状态机 + 计数
-│   │   ├── table.ts         # 工作表预览列/行派生
+│   │   ├── types.ts         # Zod 领域模型（Space/Asset/Sensor/Observation）
+│   │   ├── data/            # 合成工业园区 fixture（含问题样例）+ 城市基础设施双数据集
+│   │   ├── loadDemo.ts      # Demo 加载状态机 + 计数（四表）
+│   │   ├── table.ts         # 工作表预览列/行派生（含 Observation 列）
 │   │   ├── rules/           # v0.3.0 校验规则引擎（纯 TS）
 │   │   │   ├── types.ts          # Issue / Rule / 分级 / 类别
-│   │   │   ├── dataset.ts        # 宽松数据集与上下文构建
+│   │   │   ├── dataset.ts        # 宽松数据集与上下文构建（四表）
 │   │   │   ├── spec.ts           # 字段标签、必填、引用、命名等规范常量
 │   │   │   ├── define.ts         # 规则定义工厂
-│   │   │   ├── rules/*.ts        # 6 个类别文件承载 15 条规则
+│   │   │   ├── rules/*.ts        # 类别文件承载 19 条规则（含 observation.ts R016–R019）
 │   │   │   ├── registry.ts       # 规则注册表（ALL_RULES）
 │   │   │   ├── engine.ts         # runRules / 排序 / 筛选 / 溯源
 │   │   │   └── index.ts          # 对外出口
 │   │   ├── graph/           # v0.4.0 关系图：types / orphans（孤立识别）/ layout（确定性布局）
-│   │   ├── project/         # v0.4.0 项目状态与持久化：types / persist / ProjectProvider
+│   │   ├── project/         # v0.4.0 项目状态与持久化：types / persist（v1→v2 迁移）/ ProjectProvider / io（项目 JSON 导入导出）
 │   │   ├── report/          # v0.6.0 报告导出：types / build（聚合）/ exporters（JSON+HTML）/ download
-│   │   └── import/          # v0.2.0 导入：解析 / 目标字段 / 映射与校验
+│   │   └── import/          # v0.2.0 导入：解析 / 目标字段 / 映射与校验 / templates（映射模板复用）
 │   │       ├── parse.ts          # CSV/XLSX → {sheets, rows}
-│   │       ├── fieldTargets.ts   # 目标字段定义与表头别名
-│   │       └── mapping.ts        # 表头自动匹配 + 列→记录 + Zod 校验
-│   └── test/                # Vitest 单元测试（含 import 与 rules）
+│   │       ├── fieldTargets.ts   # 目标字段定义与表头别名（含 observation）
+│   │       ├── mapping.ts        # 表头自动匹配 + 列→记录 + Zod 校验
+│   │       └── templates.ts      # 导入映射模板持久化与复用
+│   └── test/                # Vitest 单元测试（含 import、rules、project、io、templates）
 ├── .gitignore               # 忽略 .env、密钥与构建产物
 ├── CHANGELOG.md             # 版本变更记录
 └── LICENSE                  # MIT

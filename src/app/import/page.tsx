@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { Column } from "@/lib/table";
 import {
@@ -41,6 +41,13 @@ import {
   type ValidationReport,
 } from "@/lib/rules/types";
 import { useProject } from "@/lib/project/ProjectProvider";
+import {
+  applyTemplate,
+  deleteTemplate,
+  loadTemplates,
+  saveTemplate,
+  type MappingTemplate,
+} from "@/lib/import/templates";
 
 const METHOD_LABEL: Record<MappingMethod, string> = {
   exact: "精确",
@@ -66,12 +73,22 @@ export default function ImportPage() {
   const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
   const [quality, setQuality] = useState<QualityScore | null>(null);
   const [recommendations, setRecommendations] = useState<RuleRecommendation[]>([]);
+  const [templates, setTemplates] = useState<MappingTemplate[]>([]);
+  const [templateName, setTemplateName] = useState("");
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const applyingTemplate = useRef<MappingTemplate | null>(null);
   const { importTable } = useProject();
 
-const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
+  // v0.8.0：从 localStorage 载入已保存的映射模板
+  useEffect(() => {
+    setTemplates(loadTemplates());
+  }, []);
+
+const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observations"> = {
   space: "spaces",
   asset: "assets",
   sensor: "sensors",
+  observation: "observations",
 };
 
   const currentSheet = useMemo(
@@ -85,9 +102,15 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
     [currentSheet, target],
   );
 
+  // v0.8.0：映射模板复用。存在待应用模板时优先采用模板映射，否则沿用智能建议。
   useEffect(() => {
     if (currentSheet) {
-      setMapping(suggestions.mapping);
+      if (applyingTemplate.current) {
+        setMapping(applyTemplate(applyingTemplate.current, currentSheet.headers));
+        applyingTemplate.current = null;
+      } else {
+        setMapping(suggestions.mapping);
+      }
       setOutcome(null);
     } else {
       setMapping({});
@@ -95,6 +118,26 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
     // 仅在表头或目标类型变化时重算默认映射，保留用户编辑
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suggestions]);
+
+  function onApplyTemplate(id: string) {
+    const tpl = templates.find((t) => t.id === id);
+    if (!tpl) return;
+    applyingTemplate.current = tpl;
+    setTarget(tpl.target);
+  }
+
+  function onSaveTemplate() {
+    if (!currentSheet) return;
+    const tpl = saveTemplate(templateName, target, mapping);
+    setTemplates(loadTemplates());
+    setTemplateName("");
+    setLastSaved(tpl.name);
+  }
+
+  function onDeleteTemplate(id: string) {
+    deleteTemplate(id);
+    setTemplates(loadTemplates());
+  }
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
@@ -148,7 +191,7 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
     setOutcome(outcome);
     // 仅导入了单张表，引擎只在该表内执行规则；涉及其他表的引用 / 覆盖类规则
     // 因数据不足会自动跳过，不会产生悬空引用误报。
-    const dataset: RuleDataset = { spaces: [], assets: [], sensors: [] };
+    const dataset: RuleDataset = { spaces: [], assets: [], sensors: [], observations: [] };
     dataset[PLURAL[target]] = records as LooseRecord[];
     const fullDataset = makeDataset({ [PLURAL[target]]: dataset[PLURAL[target]] });
     const report = runRules(fullDataset);
@@ -198,7 +241,7 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
       </div>
 
       <p className="mt-3 text-sm leading-6 text-slate-500">
-        选择本地的 CSV 或 Excel 文件，预览工作表并映射到 Space / Asset / Sensor 模型字段。
+        选择本地的 CSV 或 Excel 文件，预览工作表并映射到 Space / Asset / Sensor / Observation 模型字段。
         解析与映射全部在浏览器本地完成，文件不会上传。
       </p>
 
@@ -236,6 +279,54 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
 
       {/* 解析失败 */}
       {parse && !parse.ok && <ErrorState message={parse.error} />}
+
+      {/* 已保存映射模板（始终可见，便于跨会话复用） */}
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-700">已保存的映射模板</h2>
+        <p className="mt-1 text-xs text-slate-400">
+          选择文件后，可在此一键应用已保存的字段映射模板（仅匹配文件实际存在的列）。
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) onApplyTemplate(e.target.value);
+            }}
+            data-testid="import-template-select"
+            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700"
+          >
+            <option value="">— 应用已有模板 —</option>
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}（{TARGET_TYPES.find((x) => x.key === t.target)?.label ?? t.target}）
+              </option>
+            ))}
+          </select>
+        </div>
+        {templates.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {templates.map((t) => (
+              <li key={t.id} className="flex items-center gap-2 text-xs text-slate-600">
+                <span className="flex-1 truncate">{t.name}</span>
+                <button
+                  type="button"
+                  onClick={() => onApplyTemplate(t.id)}
+                  className="text-brand-600 hover:underline"
+                >
+                  应用
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDeleteTemplate(t.id)}
+                  className="text-slate-400 hover:text-red-600"
+                >
+                  删除
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {/* 解析成功后的主流程 */}
       {parse && parse.ok && (
@@ -313,6 +404,37 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors"> = {
                 <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
                   低/未匹配 {suggestions.low}
                 </span>
+              </div>
+
+              {/* 保存当前映射为模板（需已载入文件） */}
+              <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4">
+                <h3 className="text-sm font-semibold text-slate-700">保存当前映射为模板</h3>
+                <p className="mt-1 text-xs text-slate-400">
+                  可将当前字段映射保存为模板，下次导入同结构文件时一键复用。
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <input
+                    type="text"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    placeholder="模板名称（可选）"
+                    data-testid="import-template-name"
+                    className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700"
+                  />
+                  <button
+                    type="button"
+                    onClick={onSaveTemplate}
+                    data-testid="import-template-save"
+                    className="rounded-md bg-brand-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-brand-700"
+                  >
+                    保存当前映射为模板
+                  </button>
+                </div>
+                {lastSaved && (
+                  <p data-testid="import-template-saved" className="mt-2 text-xs text-emerald-600">
+                    已保存模板「{lastSaved}」。
+                  </p>
+                )}
               </div>
 
               <div className="mt-4 overflow-x-auto">

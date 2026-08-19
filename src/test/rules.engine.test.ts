@@ -21,9 +21,9 @@ describe("规则引擎：干净数据", () => {
     expect(report.issues).toEqual([]);
   });
 
-  it("15 条规则全部执行且全部通过，无跳过", () => {
-    expect(report.ruleCount).toBe(15);
-    expect(report.passedRuleCount).toBe(15);
+  it("19 条规则全部执行且全部通过，无跳过", () => {
+    expect(report.ruleCount).toBe(19);
+    expect(report.passedRuleCount).toBe(19);
     expect(report.triggeredRuleCount).toBe(0);
     expect(report.skippedRuleCount).toBe(0);
   });
@@ -114,7 +114,7 @@ describe("规则引擎：排序确定性", () => {
 
   it("同级别内按表（空间 → 设备 → 测点）再按行号排序", () => {
     const { issues } = runRules(messyPark);
-    const order = { space: 0, asset: 1, sensor: 2 } as const;
+    const order = { space: 0, asset: 1, sensor: 2, observation: 3 } as const;
     for (let i = 1; i < issues.length; i += 1) {
       const prev = issues[i - 1];
       const cur = issues[i];

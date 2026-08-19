@@ -3,7 +3,7 @@
  * 用于字段映射 UI 与表头自动匹配。新增对象类型时在此扩展，不影响现有领域模型。
  */
 
-export type ImportTargetType = "space" | "asset" | "sensor";
+export type ImportTargetType = "space" | "asset" | "sensor" | "observation";
 
 export interface TargetField {
   /** 领域模型字段名（与 types.ts 的 Zod schema 一致） */
@@ -22,6 +22,7 @@ export const TARGET_TYPES: { key: ImportTargetType; label: string }[] = [
   { key: "space", label: "空间 Space" },
   { key: "asset", label: "资产 Asset" },
   { key: "sensor", label: "传感器 Sensor" },
+  { key: "observation", label: "观测 Observation" },
 ];
 
 export const TARGET_FIELDS: Record<ImportTargetType, TargetField[]> = {
@@ -46,6 +47,15 @@ export const TARGET_FIELDS: Record<ImportTargetType, TargetField[]> = {
     { key: "quantity", label: "量测", required: true, aliases: ["quantity", "量测", "测量量", "测点量", "metric", "measurement", "指标"] },
     { key: "unit", label: "单位", required: true, aliases: ["unit", "单位", "量纲", "units", "单位量纲"] },
     { key: "description", label: "描述", required: false, aliases: ["description", "描述", "备注", "desc", "说明", "注释"] },
+  ],
+  observation: [
+    { key: "id", label: "ID", required: false, nullable: true, aliases: ["id", "obsid", "观测id", "记录id", "observationid"] },
+    { key: "sensorId", label: "传感器ID", required: true, aliases: ["sensorid", "sensor id", "传感器id", "测点id", "测点", "传感器", "assetsensorid"] },
+    { key: "timestamp", label: "观测时间", required: true, aliases: ["timestamp", "时间", "时间戳", "观测时间", "datetime", "date", "时刻"] },
+    { key: "value", label: "观测值", required: true, aliases: ["value", "值", "观测值", "读数", "数值", "measurement"] },
+    { key: "quantity", label: "量测", required: false, aliases: ["quantity", "量测", "测量量", "测点量", "metric", "测量指标"] },
+    { key: "unit", label: "单位", required: false, aliases: ["unit", "单位", "量纲", "units"] },
+    { key: "quality", label: "数据质量", required: false, aliases: ["quality", "质量", "数据质量", "状态", "flag"] },
   ],
 };
 

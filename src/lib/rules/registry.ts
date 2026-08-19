@@ -22,6 +22,12 @@ import {
 } from "./rules/hierarchy";
 import { R008_DanglingReference, R009_SelfParentReference } from "./rules/reference";
 import { R006_DuplicateId, R007_DuplicateSiblingName } from "./rules/uniqueness";
+import {
+  R016_ObservationSensorReference,
+  R017_ObservationTimestampInvalid,
+  R018_ObservationValueInvalid,
+  R019_ObservationDuplicateTimestamp,
+} from "./rules/observation";
 import type { Rule } from "./types";
 
 export const ALL_RULES: Rule[] = [
@@ -40,6 +46,10 @@ export const ALL_RULES: Rule[] = [
   R013_InvalidSpaceType,
   R014_AssetWithoutSensor,
   R015_UnitQuantityMismatch,
+  R016_ObservationSensorReference,
+  R017_ObservationTimestampInvalid,
+  R018_ObservationValueInvalid,
+  R019_ObservationDuplicateTimestamp,
 ];
 
 /** 按 ID 取规则。 */

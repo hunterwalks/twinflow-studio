@@ -11,7 +11,7 @@
 export type Severity = "error" | "warning" | "info";
 
 /** 数据表（对应领域模型三类对象）。 */
-export type TableName = "space" | "asset" | "sensor";
+export type TableName = "space" | "asset" | "sensor" | "observation";
 
 /** 规则类别。 */
 export type RuleCategory =
@@ -30,6 +30,7 @@ export interface RuleDataset {
   spaces: LooseRecord[];
   assets: LooseRecord[];
   sensors: LooseRecord[];
+  observations: LooseRecord[];
 }
 
 /** 问题定位范围：row = 定位到具体记录行；table = 整表级问题。 */
@@ -143,6 +144,7 @@ export const TABLE_LABEL: Record<TableName, string> = {
   space: "空间 Space",
   asset: "设备 Asset",
   sensor: "测点 Sensor",
+  observation: "观测 Observation",
 };
 
 /** 表排序权重。 */
@@ -150,4 +152,5 @@ export const TABLE_ORDER: Record<TableName, number> = {
   space: 0,
   asset: 1,
   sensor: 2,
+  observation: 3,
 };

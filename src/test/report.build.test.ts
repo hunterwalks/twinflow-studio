@@ -43,6 +43,6 @@ describe("buildReport", () => {
       sensors: [{ id: "SE-1", name: "c", assetId: "AS-1", quantity: "温度", unit: "℃", description: "" }],
     });
     const r = buildReport({ dataset: ds, generatedAt: SAME_TIME });
-    expect(r.meta.recordCount).toEqual({ spaces: 1, assets: 1, sensors: 1, total: 3 });
+    expect(r.meta.recordCount).toEqual({ spaces: 1, assets: 1, sensors: 1, observations: 0, total: 3 });
   });
 });

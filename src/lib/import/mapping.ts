@@ -8,7 +8,7 @@
  * 全部为纯函数、确定性、无外部 AI 依赖。
  */
 
-import { AssetSchema, SensorSchema, SpaceSchema } from "../types";
+import { AssetSchema, ObservationSchema, SensorSchema, SpaceSchema } from "../types";
 import {
   TARGET_FIELDS,
   normalizeHeader,
@@ -25,6 +25,7 @@ const SCHEMA_BY_TARGET = {
   space: SpaceSchema,
   asset: AssetSchema,
   sensor: SensorSchema,
+  observation: ObservationSchema,
 } as const;
 
 /** 映射匹配方式。 */

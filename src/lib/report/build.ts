@@ -35,6 +35,7 @@ export function buildReport(input: BuildReportInput): TwinFlowReport {
   const spaces = dataset.spaces.length;
   const assets = dataset.assets.length;
   const sensors = dataset.sensors.length;
+  const observations = dataset.observations.length;
 
   return {
     meta: {
@@ -46,7 +47,8 @@ export function buildReport(input: BuildReportInput): TwinFlowReport {
         spaces,
         assets,
         sensors,
-        total: spaces + assets + sensors,
+        observations,
+        total: spaces + assets + sensors + observations,
       },
     },
     dataset,

@@ -14,7 +14,7 @@ import type {
 
 /** 空数据集。 */
 export function emptyDataset(): RuleDataset {
-  return { spaces: [], assets: [], sensors: [] };
+  return { spaces: [], assets: [], sensors: [], observations: [] };
 }
 
 /** 由部分表构造数据集（未给出的表为空）。 */
@@ -23,6 +23,7 @@ export function makeDataset(partial: Partial<RuleDataset>): RuleDataset {
     spaces: partial.spaces ?? [],
     assets: partial.assets ?? [],
     sensors: partial.sensors ?? [],
+    observations: partial.observations ?? [],
   };
 }
 
@@ -54,6 +55,7 @@ export function toRuleDataset(park: IndustrialPark): RuleDataset {
       unit: s.unit,
       description: s.description,
     })),
+    observations: [],
   };
 }
 
@@ -84,6 +86,7 @@ export function indexed(records: LooseRecord[]): IndexedRecord[] {
 export function tableRecords(ds: RuleDataset, table: TableName): LooseRecord[] {
   if (table === "space") return ds.spaces;
   if (table === "asset") return ds.assets;
+  if (table === "observation") return ds.observations;
   return ds.sensors;
 }
 
@@ -93,6 +96,7 @@ export function buildContext(dataset: RuleDataset): RuleContext {
     space: new Set(dataset.spaces.map((r) => val(r, "id")).filter((v) => v !== "")),
     asset: new Set(dataset.assets.map((r) => val(r, "id")).filter((v) => v !== "")),
     sensor: new Set(dataset.sensors.map((r) => val(r, "id")).filter((v) => v !== "")),
+    observation: new Set(dataset.observations.map((r) => val(r, "id")).filter((v) => v !== "")),
   };
 
   const sensorCountByAsset = new Map<string, number>();
@@ -108,6 +112,7 @@ export function buildContext(dataset: RuleDataset): RuleContext {
       space: dataset.spaces.length > 0,
       asset: dataset.assets.length > 0,
       sensor: dataset.sensors.length > 0,
+      observation: dataset.observations.length > 0,
     },
     idSet,
     sensorCountByAsset,

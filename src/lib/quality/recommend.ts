@@ -53,11 +53,12 @@ export function recommendRules(dataset: RuleDataset): RuleRecommendation[] {
     recs.push(r);
   };
 
-  const tables: TableName[] = ["space", "asset", "sensor"];
-  const PLURAL: Record<TableName, "spaces" | "assets" | "sensors"> = {
+  const tables: TableName[] = ["space", "asset", "sensor", "observation"];
+  const PLURAL: Record<TableName, "spaces" | "assets" | "sensors" | "observations"> = {
     space: "spaces",
     asset: "assets",
     sensor: "sensors",
+    observation: "observations",
   };
 
   for (const t of tables) {

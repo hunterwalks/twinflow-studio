@@ -30,10 +30,12 @@ export function countObjects(data: DemoData): {
   spaces: number;
   assets: number;
   sensors: number;
+  observations: number;
   total: number;
 } {
   const spaces = data.spaces.length;
   const assets = data.assets.length;
   const sensors = data.sensors.length;
-  return { spaces, assets, sensors, total: spaces + assets + sensors };
+  const observations = data.observations.length;
+  return { spaces, assets, sensors, observations, total: spaces + assets + sensors + observations };
 }

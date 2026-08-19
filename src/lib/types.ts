@@ -36,6 +36,18 @@ export const SensorSchema = z.object({
 });
 export type Sensor = z.infer<typeof SensorSchema>;
 
+/** 观测 Observation（v0.8.0）：Sensor 产生的观测读数；规则引擎直接校验宽松记录。 */
+export const ObservationSchema = z.object({
+  id: z.string().optional(),
+  sensorId: z.string().min(1),
+  timestamp: z.string().min(1),
+  value: z.string().min(1),
+  quantity: z.string().optional(),
+  unit: z.string().optional(),
+  quality: z.string().optional(),
+});
+export type Observation = z.infer<typeof ObservationSchema>;
+
 export const IndustrialParkSchema = z.object({
   spaces: z.array(SpaceSchema),
   assets: z.array(AssetSchema),

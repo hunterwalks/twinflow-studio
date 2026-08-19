@@ -24,7 +24,7 @@ function makeReport(issues: Issue[]): ValidationReport {
   return {
     issues,
     totals,
-    byTable: { space: 0, asset: 0, sensor: 0 },
+    byTable: { space: 0, asset: 0, sensor: 0, observation: 0 },
     byCategory: {
       completeness: 0,
       uniqueness: 0,

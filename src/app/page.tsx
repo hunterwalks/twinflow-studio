@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { APP_VERSION } from "@/lib/version";
 
 const STEPS = [
-  { n: 1, title: "打开 Demo", desc: "一键载入合成数据集，立刻看到 Space / Asset / Sensor 三类对象。" },
-  { n: 2, title: "校验质量", desc: "运行 15 条确定性规则，查看分级且可溯源的问题清单与质量评分。" },
+  { n: 1, title: "打开 Demo", desc: "一键载入合成数据集，立刻看到 Space / Asset / Sensor / Observation 四类对象。" },
+  { n: 2, title: "校验质量", desc: "运行 19 条确定性规则，查看分级且可溯源的问题清单与质量评分。" },
   { n: 3, title: "看关系图", desc: "在关系图中查看层级与引用，孤立或悬空对象会被高亮标注原因。" },
   { n: 4, title: "导入你的表", desc: "选择本地 CSV / Excel，映射字段并即时校验，全程不上传。" },
   { n: 5, title: "导出报告", desc: "一键生成自包含 HTML / JSON 治理报告，可离线打开与归档。" },
@@ -11,7 +12,7 @@ const STEPS = [
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v0.7.0</p>
+      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v{APP_VERSION}</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
         数字孪生数据建模与质量治理工作台
       </h1>
@@ -48,7 +49,7 @@ export default function HomePage() {
       <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-800">导入你的表格数据</h2>
         <p className="mt-2 text-sm text-slate-500">
-          选择本地 CSV / Excel 文件，预览工作表并把列映射到 Space / Asset / Sensor 模型字段，
+          选择本地 CSV / Excel 文件，预览工作表并把列映射到 Space / Asset / Sensor / Observation 模型字段，
           导入后立即得到通过计数与逐行错误。全程在浏览器本地完成，不上传文件。
         </p>
         <Link
@@ -61,9 +62,24 @@ export default function HomePage() {
       </div>
 
       <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-800">管理完整项目</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          项目由 Space / Asset / Sensor / Observation 四张表组成，可整体导出为单个 JSON 文件并在任意设备恢复；
+          也兼容导入 v1 旧项目（自动迁移为四表）。导入为覆盖式，全部在浏览器本地完成。
+        </p>
+        <Link
+          href="/project"
+          data-testid="home-open-project"
+          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
+        >
+          打开项目管理 →
+        </Link>
+      </div>
+
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-800">校验数据质量</h2>
         <p className="mt-2 text-sm text-slate-500">
-          对内置 Demo 或含问题样例运行 15 条确定性校验规则，得到分级（错误 / 警告 / 提示）
+          对内置 Demo 或含问题样例运行 19 条确定性校验规则，得到分级（错误 / 警告 / 提示）
           且可溯源（表 / 行号 / 记录 ID / 字段）的问题清单，每条问题附带修复建议。
         </p>
         <Link
@@ -116,8 +132,9 @@ export default function HomePage() {
       </section>
 
       <p className="mt-10 text-xs text-slate-400">
-        当前为 v0.7.0：在 v0.6.0 报告导出之上，新增公开静态托管（GitHub Pages）、Playwright E2E、
-        新手引导与错误恢复、两套城市基础设施合成数据、ESLint CLI 与 CI 质量门。全部为纯函数、可离线、可测试，无外部 AI 依赖。
+        当前为 v{APP_VERSION}：在 v0.7.0 之上，将项目升级为 Space / Asset / Sensor / Observation 四表模型，
+        支持项目 JSON 整体导入 / 导出（兼容 v1 旧项目自动迁移）与导入映射模板复用；
+        校验规则增至 19 条，覆盖观测引用完整性、时间戳、数值与同测点重复时间戳。全部为纯函数、可离线、可测试，无外部 AI 依赖。
       </p>
     </main>
   );

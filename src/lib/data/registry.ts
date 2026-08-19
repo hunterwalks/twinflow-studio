@@ -7,6 +7,7 @@ import { cityInfraProblem } from "./cityInfraProblem";
 /**
  * 统一 Demo 数据集注册表（v0.7.0）
  * 将既有与新增合成数据归一为宽松记录，供 Demo 加载、校验页样例与 E2E 复用。
+ * v0.8.0：DemoDataset 新增 observations 第四表（样例数据在 Task 5 填充）。
  */
 export interface DemoDataset {
   key: string;
@@ -17,6 +18,7 @@ export interface DemoDataset {
   spaces: LooseRecord[];
   assets: LooseRecord[];
   sensors: LooseRecord[];
+  observations: LooseRecord[];
 }
 
 function toLoose<T extends Record<string, unknown>>(rows: T[]): LooseRecord[] {
@@ -36,15 +38,17 @@ export const DEMO_DATASETS: DemoDataset[] = [
     spaces: toLoose(industrialPark.spaces),
     assets: toLoose(industrialPark.assets),
     sensors: toLoose(industrialPark.sensors),
+    observations: [],
   },
   {
     key: "city-clean",
     label: "城市基础设施（干净）",
     note: "v0.7.0 新增：结构完整、引用闭合、量纲一致的城市基础设施数据。",
     clean: true,
-    spaces: toLoose(cityInfraClean.spaces),
-    assets: toLoose(cityInfraClean.assets),
-    sensors: toLoose(cityInfraClean.sensors),
+    spaces: cityInfraClean.spaces,
+    assets: cityInfraClean.assets,
+    sensors: cityInfraClean.sensors,
+    observations: cityInfraClean.observations,
   },
   {
     key: "messy",
@@ -54,6 +58,7 @@ export const DEMO_DATASETS: DemoDataset[] = [
     spaces: messyPark.spaces,
     assets: messyPark.assets,
     sensors: messyPark.sensors,
+    observations: [],
   },
   {
     key: "city-problem",
@@ -63,6 +68,7 @@ export const DEMO_DATASETS: DemoDataset[] = [
     spaces: cityInfraProblem.spaces,
     assets: cityInfraProblem.assets,
     sensors: cityInfraProblem.sensors,
+    observations: [],
   },
 ];
 

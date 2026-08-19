@@ -47,7 +47,7 @@ function zeroSeverity(): Record<Severity, number> & { all: number } {
 }
 
 function zeroTable(): Record<TableName, number> {
-  return { space: 0, asset: 0, sensor: 0 };
+  return { space: 0, asset: 0, sensor: 0, observation: 0 };
 }
 
 function zeroCategory(): Record<RuleCategory, number> {

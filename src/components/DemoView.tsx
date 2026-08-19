@@ -8,18 +8,25 @@ import {
   type DemoDataset,
 } from "@/lib/data/registry";
 import { useProject } from "@/lib/project/ProjectProvider";
-import { ASSET_COLUMNS, SENSOR_COLUMNS, SPACE_COLUMNS, type Row } from "@/lib/table";
+import {
+  ASSET_COLUMNS,
+  OBSERVATION_COLUMNS,
+  SENSOR_COLUMNS,
+  SPACE_COLUMNS,
+  type Row,
+} from "@/lib/table";
 import { DataTable } from "./DataTable";
 import { ObjectCounts } from "./ObjectCounts";
 import { EmptyState } from "./EmptyState";
 import { ErrorState } from "./ErrorState";
 
-type TabKey = "space" | "asset" | "sensor";
+type TabKey = "space" | "asset" | "sensor" | "observation";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "space", label: "空间 Space" },
   { key: "asset", label: "资产 Asset" },
   { key: "sensor", label: "传感器 Sensor" },
+  { key: "observation", label: "观测 Observation" },
 ];
 
 export function DemoView({ result }: { result: DemoResult }) {
@@ -28,13 +35,13 @@ export function DemoView({ result }: { result: DemoResult }) {
   const [ds, setDs] = useState<DemoDataset | null>(
     result.status === "success" ? result.data : null,
   );
-  const { loadDemo, isEmpty } = useProject();
+  const { loadDemo, isEmpty, hydrated } = useProject();
 
-  // 首次进入且项目为空时，自动加载当前选中数据集，便于直接体验完整流程。
+  // 仅在水合完成且项目确实为空时，自动加载当前选中数据集，避免挂载瞬间误覆盖已恢复的项目。
   useEffect(() => {
-    if (ds && isEmpty) loadDemo(ds.key);
+    if (hydrated && ds && isEmpty) loadDemo(ds.key);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ds, isEmpty]);
+  }, [ds, isEmpty, hydrated]);
 
   if (result.status === "error") {
     return <ErrorState message={result.message} />;
@@ -44,8 +51,22 @@ export function DemoView({ result }: { result: DemoResult }) {
     return <EmptyState />;
   }
 
-  const columns = tab === "space" ? SPACE_COLUMNS : tab === "asset" ? ASSET_COLUMNS : SENSOR_COLUMNS;
-  const records = tab === "space" ? ds.spaces : tab === "asset" ? ds.assets : ds.sensors;
+  const columns =
+    tab === "space"
+      ? SPACE_COLUMNS
+      : tab === "asset"
+        ? ASSET_COLUMNS
+        : tab === "sensor"
+          ? SENSOR_COLUMNS
+          : OBSERVATION_COLUMNS;
+  const records =
+    tab === "space"
+      ? ds.spaces
+      : tab === "asset"
+        ? ds.assets
+        : tab === "sensor"
+          ? ds.sensors
+          : ds.observations;
   const rows = records as Row[];
   const title = TABS.find((t) => t.key === tab)?.label ?? "数据";
 
@@ -55,6 +76,7 @@ export function DemoView({ result }: { result: DemoResult }) {
         spaces={ds.spaces.length}
         assets={ds.assets.length}
         sensors={ds.sensors.length}
+        observations={ds.observations.length}
       />
 
       {/* 数据集选择：点击同时切换预览并加载到项目 */}
@@ -108,6 +130,7 @@ export function DemoView({ result }: { result: DemoResult }) {
           <button
             key={t.key}
             type="button"
+            data-testid={`demo-tab-${t.key}`}
             role="tab"
             aria-selected={tab === t.key}
             onClick={() => setTab(t.key)}

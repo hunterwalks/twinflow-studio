@@ -420,10 +420,10 @@ describe("R015 量纲与单位不匹配", () => {
 });
 
 describe("规则清单完整性", () => {
-  it("共注册 15 条规则，ID 唯一且升序", () => {
-    expect(ALL_RULES).toHaveLength(15);
+  it("共注册 19 条规则，ID 唯一且升序", () => {
+    expect(ALL_RULES).toHaveLength(19);
     const ids = ALL_RULES.map((r) => r.id);
-    expect(new Set(ids).size).toBe(15);
+    expect(new Set(ids).size).toBe(19);
     expect([...ids].sort()).toEqual(ids);
   });
 
@@ -451,7 +451,7 @@ describe("规则清单完整性", () => {
 
   it("每条规则都有对应的命中用例被本文件覆盖", () => {
     // 用例文件中每条规则均以 describe("Rxxx ...") 组织，此处以规则数量作为守卫，
-    // 新增规则若未补用例，上面的 15 条断言会先失败。
+    // 新增规则若未补用例，上面的 19 条断言会先失败。
     expect(ALL_RULES.map((r) => r.id)).toEqual([
       "R001",
       "R002",
@@ -468,6 +468,10 @@ describe("规则清单完整性", () => {
       "R013",
       "R014",
       "R015",
+      "R016",
+      "R017",
+      "R018",
+      "R019",
     ]);
   });
 });
