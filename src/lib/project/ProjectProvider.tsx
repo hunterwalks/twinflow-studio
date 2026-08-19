@@ -12,9 +12,10 @@ import {
 } from "react";
 import type { LooseRecord } from "@/lib/rules/types";
 import { getDemoDataset } from "@/lib/data/registry";
-import type { ProjectState, TableKey } from "./types";
-import { EMPTY_PROJECT } from "./types";
+import type { ProjectMetadata, ProjectState, TableKey } from "./types";
+import { EMPTY_METADATA, EMPTY_PROJECT } from "./types";
 import { clearProject, loadProject, saveProject } from "./persist";
+import { applyFix as applyFixToState, type ProposedFix } from "@/lib/fixes";
 
 interface ProjectContextValue {
   state: ProjectState;
@@ -29,6 +30,10 @@ interface ProjectContextValue {
   importTable: (table: TableKey, records: LooseRecord[]) => void;
   /** 整体导入项目文件（覆盖式）；用于 /project 的 JSON 导入。 */
   importProject: (state: ProjectState) => void;
+  /** 更新项目元信息（局部合并；缺失字段保留原值）。 */
+  updateMetadata: (patch: Partial<ProjectMetadata>) => void;
+  /** 应用一条确定性修复（来自修复预览引擎）。 */
+  applyFix: (fix: ProposedFix) => void;
   clear: () => void;
 }
 
@@ -93,6 +98,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       assets: table === "assets" ? records : prev.assets,
       sensors: table === "sensors" ? records : prev.sensors,
       observations: table === "observations" ? records : prev.observations,
+      metadata: prev.metadata,
       updatedAt: new Date().toISOString(),
     }));
   }, []);
@@ -106,14 +112,29 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       assets: next.assets,
       sensors: next.sensors,
       observations: next.observations,
+      metadata: next.metadata,
       updatedAt: new Date().toISOString(),
     });
+  }, []);
+
+  const updateMetadata = useCallback((patch: Partial<ProjectMetadata>) => {
+    touchedRef.current = true;
+    setState((prev) => ({
+      ...prev,
+      metadata: { ...EMPTY_METADATA, ...(prev.metadata ?? {}), ...patch },
+      updatedAt: new Date().toISOString(),
+    }));
   }, []);
 
   const clear = useCallback(() => {
     touchedRef.current = true;
     clearProject();
     setState({ ...EMPTY_PROJECT });
+  }, []);
+
+  const applyFix = useCallback((fix: ProposedFix) => {
+    touchedRef.current = true;
+    setState((prev) => applyFixToState(prev, fix));
   }, []);
 
   const isEmpty =
@@ -123,8 +144,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     state.observations.length === 0;
 
   const value = useMemo<ProjectContextValue>(
-    () => ({ state, isEmpty, hydrated, storageWarning, loadDemo, importTable, importProject, clear }),
-    [state, isEmpty, hydrated, storageWarning, loadDemo, importTable, importProject, clear],
+    () => ({ state, isEmpty, hydrated, storageWarning, loadDemo, importTable, importProject, updateMetadata, applyFix, clear }),
+    [state, isEmpty, hydrated, storageWarning, loadDemo, importTable, importProject, updateMetadata, applyFix, clear],
   );
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;

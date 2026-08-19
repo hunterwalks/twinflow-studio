@@ -1,5 +1,5 @@
 import type { LooseRecord } from "@/lib/rules/types";
-import type { ProjectState, ProjectSource } from "./types";
+import type { ProjectMetadata, ProjectState, ProjectSource } from "./types";
 import { EMPTY_PROJECT } from "./types";
 
 const STORAGE_KEY = "twinflow-project-v1";
@@ -57,6 +57,7 @@ export function loadProject(): ProjectState | null {
       assets?: unknown;
       sensors?: unknown;
       observations?: unknown;
+      metadata?: unknown;
       updatedAt?: unknown;
     };
     if (!parsed || typeof parsed.version !== "number") return null;
@@ -75,6 +76,7 @@ export function loadProject(): ProjectState | null {
         observations: Array.isArray(parsed.observations)
           ? (parsed.observations as LooseRecord[])
           : [],
+        metadata: isMetadata(parsed.metadata),
         updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : "",
       };
     }
@@ -82,6 +84,18 @@ export function loadProject(): ProjectState | null {
   } catch {
     return null;
   }
+}
+
+/** 宽松校验元信息形状；不合法时返回 undefined（按未设置处理）。 */
+function isMetadata(v: unknown): ProjectMetadata | undefined {
+  if (v == null || typeof v !== "object") return undefined;
+  const m = v as Partial<ProjectMetadata>;
+  const asStr = (x: unknown) => (typeof x === "string" ? x : "");
+  return {
+    name: asStr(m.name),
+    description: asStr(m.description),
+    owner: asStr(m.owner),
+  };
 }
 
 /** 持久化项目；写入失败（隐私模式 / 配额）静默降级，不影响应用。 */

@@ -1,6 +1,6 @@
 /**
  * 规则注册表（v0.3.0）
- * 共 15 条确定性校验规则，按规则 ID 升序注册。
+ * 共 24 条确定性校验规则，按规则 ID 升序注册。
  */
 
 import {
@@ -27,6 +27,11 @@ import {
   R017_ObservationTimestampInvalid,
   R018_ObservationValueInvalid,
   R019_ObservationDuplicateTimestamp,
+  R020_ObservationUnitMismatch,
+  R021_ObservationQualityInvalid,
+  R022_ObservationTimestampOutOfRange,
+  R023_SensorWithoutObservation,
+  R024_ObservationMissingQuantityOrUnit,
 } from "./rules/observation";
 import type { Rule } from "./types";
 
@@ -50,6 +55,11 @@ export const ALL_RULES: Rule[] = [
   R017_ObservationTimestampInvalid,
   R018_ObservationValueInvalid,
   R019_ObservationDuplicateTimestamp,
+  R020_ObservationUnitMismatch,
+  R021_ObservationQualityInvalid,
+  R022_ObservationTimestampOutOfRange,
+  R023_SensorWithoutObservation,
+  R024_ObservationMissingQuantityOrUnit,
 ];
 
 /** 按 ID 取规则。 */

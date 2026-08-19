@@ -2,6 +2,29 @@
 
 所有重要变更记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循 [SemVer](https://semver.org/)。
 
+## [0.9.0] - 2026-08-19（候选）
+
+> 路线图阶段 B：从「能校验」到「能治理」。在 v0.8.0 的四表项目与 19 条规则之上，补齐观测域规则、一键修复与预览、项目元信息与跨表检索、跨项目对比，让质量治理闭环可在界面内完成。不引入 AI / 后端，全部为确定性纯函数与本地计算。
+
+### Added
+- **规则扩展 R020–R024**（`src/lib/rules/rules/observation.ts`，规则总数 **19 → 24**）：R020 观测量纲与单位不匹配（warning，复用量纲对照表）、R021 观测质量标记非法（warning）、R022 观测时间戳超出合理范围（warning）、R023 测点无任何观测（info，覆盖度）、R024 观测缺失量纲或单位（warning）。观测表为空时统一跳过并标注原因，**不破坏**既有「Demo 零问题」与含问题样例的触发基线。
+- **问题修复预览引擎**（`src/lib/fixes.ts`）：为可确定性修复的问题生成 before→after 建议并一键应用。支持 R003 去空白、R004 截断超长名称、R009 解除父级自引用、R015 / R020 单位归一为量纲标准单位；其余无法安全推断目标值的规则返回不可自动修复，交由用户手动处理。`applyFix` 为不可变更新，应用前校验目标值未被并发改动，契合 local-first / 确定性原则。
+- **/validate 一键修复 UI**：问题清单为可修复项内联渲染「修复预览（当前值 → 建议值）+ 应用修复」按钮，点击后重新校验、对应问题消失；切换数据集自动重置工作副本，不影响内置样例常量。
+- **项目元信息（`ProjectState.metadata`）**：可选字段 name / description / owner，`/project` 页可编辑保存，随项目 JSON 导出与导入往返恢复（`io.ts` / `persist.ts` 透传，旧存档兼容为未设置）。
+- **跨表检索**（`src/lib/project/search.ts`）：在 Space / Asset / Sensor / Observation 四表中按 ID / 名称模糊查找（大小写不敏感、确定性排序、每条记录至多命中一次），`/project` 页提供检索框与结果列表。
+- **跨项目对比**（`src/lib/compare.ts` + `/compare` 页）：并排对比「当前项目」与内置样例（或任意两个样例）的总记录数、分表记录数、质量评分（0–100）、问题总数与分级计数、命中 / 通过 / 跳过规则数，以及双方命中最多的 Top 3 问题规则；数值差异自动标注更优方（高优 / 低优 / 持平 / 不适用）。
+
+### Changed
+- 版本号升至 v0.9.0；首页、README、CHANGELOG 同步更新。
+- `next.config.mjs`：构建 worker 限制为 1（`experimental.cpus: 1`），规避 Windows 本机多 worker 并发派生的偶发 STATUS_DLL_INIT_FAILED；关闭 Next 内置类型检查 worker（`typescript.ignoreBuildErrors`），类型安全由独立 `tsc --noEmit` 质量门保证。
+- 新增 `scripts/build-local.sh`：本机构建脚本，改名让位旧 `.next`、覆盖 `NODE_OPTIONS`（去掉 safe-delete shim）并限制 worker 数，解决本机 `next build` 结尾清理临时目录被安全删除守卫超时误报的问题。
+
+### Quality
+- 新增测试：修复引擎（`fixes.test.ts`：R003 / R004 / R009 / R015 / R020 命中与不命中、不可修复返回 null、applyFix 不可变与并发保护）；元信息与检索（`project.metadata.test.ts`：searchProject 跨表命中 / 空查询 / limit、serialize↔parse 元信息往返、非法形状宽松转换、v1 迁移无元信息）；跨项目对比（`compare.test.ts`：画像字段自洽、方向判定、持平 / 不适用指标）。
+- 规则引擎断言更新：规则总数 19 → 24、干净数据 passed 19 / skipped 5、messyPark 触发 14 / skipped 5；`page.tsx` 文案与 `messyPark.ts` 注释同步。
+- 新增 `e2e/v09.spec.ts`：修复预览可应用且问题数下降、干净数据无修复按钮（无假阳性）、对比页渲染与切换重算。
+- 全仓测试数与五道质量门（typecheck / lint / unit / build / E2E）结果见交付记录 `Run_Record.md` / `Validation.md`。
+
 ## [0.8.0] - 2026-08-19（候选）
 
 > 路线图阶段 A：用完整项目而非单张表工作。在 v0.7.0 的四道质量门（typecheck / lint / test / build）+ E2E 之上，把「单表导入 / 单数据集校验」提升为「以四表项目为单位的建模、保存、迁移与复用」。不引入 AI / 后端，复用既有校验、质量、报告与导入引擎。

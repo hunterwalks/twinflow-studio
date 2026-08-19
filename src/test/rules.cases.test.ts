@@ -27,6 +27,13 @@ import {
   R006_DuplicateId,
   R007_DuplicateSiblingName,
 } from "@/lib/rules/rules/uniqueness";
+import {
+  R020_ObservationUnitMismatch,
+  R021_ObservationQualityInvalid,
+  R022_ObservationTimestampOutOfRange,
+  R023_SensorWithoutObservation,
+  R024_ObservationMissingQuantityOrUnit,
+} from "@/lib/rules/rules/observation";
 import type { LooseRecord, Rule, RuleDataset } from "@/lib/rules/types";
 
 /**
@@ -66,6 +73,19 @@ function sensor(over: Over = {}): LooseRecord {
     quantity: "温度",
     unit: "°C",
     description: "出水温度测点",
+    ...over,
+  };
+}
+
+function observation(over: Over = {}): LooseRecord {
+  return {
+    id: "OB-001",
+    sensorId: "SE-001",
+    timestamp: "2026-08-10T08:00:00Z",
+    value: "23.5",
+    quantity: "温度",
+    unit: "°C",
+    quality: "good",
     ...over,
   };
 }
@@ -419,11 +439,138 @@ describe("R015 量纲与单位不匹配", () => {
   });
 });
 
+describe("R020 观测量纲与单位不匹配", () => {
+  it("命中：量纲为温度但单位为 kPa", () => {
+    const issues = hits(R020_ObservationUnitMismatch, {
+      observations: [observation({ quantity: "温度", unit: "kPa" })],
+    });
+    expect(issues).toHaveLength(1);
+    expect(issues[0].field).toBe("unit");
+    expect(issues[0].severity).toBe("warning");
+    expect(issues[0].message).toContain("温度");
+  });
+
+  it("不命中：温度 / °C 匹配，且单位大小写不敏感", () => {
+    const issues = hits(R020_ObservationUnitMismatch, {
+      observations: [
+        observation(),
+        observation({ id: "OB-002", quantity: "功率", unit: "KW" }),
+      ],
+    });
+    expect(issues).toHaveLength(0);
+  });
+
+  it("防假阳性：观测表为空时跳过", () => {
+    const item = summary(R020_ObservationUnitMismatch, { sensors: [sensor()] });
+    expect(item.count).toBe(0);
+    expect(item.skipped).toContain("观测表为空");
+  });
+});
+
+describe("R021 观测质量标记非法", () => {
+  it("命中：质量标记为 ok（不在允许范围）", () => {
+    const issues = hits(R021_ObservationQualityInvalid, {
+      observations: [observation({ quality: "ok" })],
+    });
+    expect(issues).toHaveLength(1);
+    expect(issues[0].field).toBe("quality");
+    expect(issues[0].severity).toBe("warning");
+  });
+
+  it("不命中：good / bad / questionable 均合法", () => {
+    const issues = hits(R021_ObservationQualityInvalid, {
+      observations: [
+        observation(),
+        observation({ id: "OB-002", quality: "bad" }),
+        observation({ id: "OB-003", quality: "questionable" }),
+      ],
+    });
+    expect(issues).toHaveLength(0);
+  });
+
+  it("不命中：质量标记为空表示未标记", () => {
+    expect(
+      hits(R021_ObservationQualityInvalid, { observations: [observation({ quality: "" })] }),
+    ).toHaveLength(0);
+  });
+});
+
+describe("R022 观测时间超出合理范围", () => {
+  it("命中：年份 1970 超出范围", () => {
+    const issues = hits(R022_ObservationTimestampOutOfRange, {
+      observations: [observation({ timestamp: "1970-01-01T00:00:00Z" })],
+    });
+    expect(issues).toHaveLength(1);
+    expect(issues[0].field).toBe("timestamp");
+    expect(issues[0].severity).toBe("warning");
+  });
+
+  it("不命中：2026 年落在合理区间", () => {
+    expect(hits(R022_ObservationTimestampOutOfRange, { observations: [observation()] })).toHaveLength(0);
+  });
+
+  it("不命中：无法解析的时间交由 R017，本规则不重复报告", () => {
+    expect(
+      hits(R022_ObservationTimestampOutOfRange, { observations: [observation({ timestamp: "不是时间" })] }),
+    ).toHaveLength(0);
+  });
+});
+
+describe("R023 测点缺少观测数据", () => {
+  it("命中：测点没有任何观测记录", () => {
+    const issues = hits(R023_SensorWithoutObservation, {
+      sensors: [sensor({ id: "SE-002" })],
+      observations: [observation({ sensorId: "SE-001" })],
+    });
+    expect(issues).toHaveLength(1);
+    expect(issues[0].table).toBe("sensor");
+    expect(issues[0].severity).toBe("info");
+    expect(issues[0].recordId).toBe("SE-002");
+  });
+
+  it("不命中：测点已有观测", () => {
+    const issues = hits(R023_SensorWithoutObservation, {
+      sensors: [sensor()],
+      observations: [observation({ sensorId: "SE-001" })],
+    });
+    expect(issues).toHaveLength(0);
+  });
+
+  it("防假阳性：未导入观测表时跳过", () => {
+    const item = summary(R023_SensorWithoutObservation, { sensors: [sensor()] });
+    expect(item.count).toBe(0);
+    expect(item.skipped).toContain("未导入观测表");
+  });
+});
+
+describe("R024 观测缺少量纲或单位", () => {
+  it("命中：量纲与单位皆为空", () => {
+    const issues = hits(R024_ObservationMissingQuantityOrUnit, {
+      observations: [observation({ quantity: "", unit: "" })],
+    });
+    expect(issues).toHaveLength(1);
+    expect(issues[0].field).toBe("quantity");
+    expect(issues[0].severity).toBe("warning");
+  });
+
+  it("命中：仅有数值缺单位", () => {
+    const issues = hits(R024_ObservationMissingQuantityOrUnit, {
+      observations: [observation({ quantity: "温度", unit: "" })],
+    });
+    expect(issues).toHaveLength(1);
+    expect(issues[0].field).toBe("unit");
+  });
+
+  it("不命中：量纲与单位齐全", () => {
+    expect(hits(R024_ObservationMissingQuantityOrUnit, { observations: [observation()] })).toHaveLength(0);
+  });
+});
+
 describe("规则清单完整性", () => {
-  it("共注册 19 条规则，ID 唯一且升序", () => {
-    expect(ALL_RULES).toHaveLength(19);
+  it("共注册 24 条规则，ID 唯一且升序", () => {
+    expect(ALL_RULES).toHaveLength(24);
     const ids = ALL_RULES.map((r) => r.id);
-    expect(new Set(ids).size).toBe(19);
+    expect(new Set(ids).size).toBe(24);
     expect([...ids].sort()).toEqual(ids);
   });
 
@@ -451,7 +598,7 @@ describe("规则清单完整性", () => {
 
   it("每条规则都有对应的命中用例被本文件覆盖", () => {
     // 用例文件中每条规则均以 describe("Rxxx ...") 组织，此处以规则数量作为守卫，
-    // 新增规则若未补用例，上面的 19 条断言会先失败。
+    // 新增规则若未补用例，上面的 24 条断言会先失败。
     expect(ALL_RULES.map((r) => r.id)).toEqual([
       "R001",
       "R002",
@@ -472,6 +619,11 @@ describe("规则清单完整性", () => {
       "R017",
       "R018",
       "R019",
+      "R020",
+      "R021",
+      "R022",
+      "R023",
+      "R024",
     ]);
   });
 });

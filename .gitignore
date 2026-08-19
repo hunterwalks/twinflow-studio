@@ -5,6 +5,8 @@ node_modules/
 
 # next.js
 .next/
+# 本地构建改名让位产生的 .next 变体目录（scripts/build-local.sh 产物）
+.next*/
 out/
 build/
 next-env.d.ts
@@ -28,6 +30,8 @@ githubKey.md
 
 # logs
 *.log
+build_log.txt
+e2e_log.txt
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

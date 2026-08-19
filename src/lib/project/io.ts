@@ -1,5 +1,5 @@
 import type { LooseRecord } from "@/lib/rules/types";
-import type { ProjectState, ProjectSource } from "./types";
+import type { ProjectMetadata, ProjectState, ProjectSource } from "./types";
 import { migrateProjectV1ToV2 } from "./persist";
 import { APP_VERSION } from "@/lib/version";
 
@@ -107,6 +107,7 @@ export function parseProjectFile(content: string): ParseProjectResult {
       assets: assets ?? [],
       sensors: sensors ?? [],
       observations: observations ?? [],
+      metadata: isMetadata(candidate.metadata),
       updatedAt:
         typeof candidate.updatedAt === "string"
           ? candidate.updatedAt
@@ -116,4 +117,16 @@ export function parseProjectFile(content: string): ParseProjectResult {
   }
 
   throw new Error(`不支持的项目文件版本：v${version}。`);
+}
+
+/** 宽松校验元信息形状；不合法时返回 undefined（按未设置处理）。 */
+function isMetadata(v: unknown): ProjectMetadata | undefined {
+  if (v == null || typeof v !== "object") return undefined;
+  const m = v as Partial<ProjectMetadata>;
+  const asStr = (x: unknown) => (typeof x === "string" ? x : "");
+  return {
+    name: asStr(m.name),
+    description: asStr(m.description),
+    owner: asStr(m.owner),
+  };
 }

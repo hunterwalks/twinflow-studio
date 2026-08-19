@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { industrialPark } from "@/lib/data/industrialPark";
 import { messyPark, rootlessSpaces } from "@/lib/data/messyPark";
@@ -12,6 +12,7 @@ import {
   CATEGORY_LABEL,
   SEVERITY_LABEL,
   TABLE_LABEL,
+  type Issue,
   type RuleCategory,
   type RuleDataset,
   type Severity,
@@ -24,6 +25,8 @@ import { QualityScoreCard } from "@/components/QualityScoreCard";
 import { RuleRecommendations } from "@/components/RuleRecommendations";
 import { qualityScore } from "@/lib/quality/score";
 import { recommendRules } from "@/lib/quality/recommend";
+import { applyFix as applyFixToState, proposeFix, type ProposedFix } from "@/lib/fixes";
+import type { ProjectState } from "@/lib/project/types";
 
 interface SampleOption {
   key: string;
@@ -92,9 +95,52 @@ export default function ValidatePage() {
   const [table, setTable] = useState<TableName | "all">("all");
 
   const sample = SAMPLES.find((s) => s.key === sampleKey) ?? SAMPLES[0];
-  const report = useMemo(() => runRules(sample.dataset), [sample]);
+  // 工作副本：默认取自样本，应用修复时就地更新后重新校验，不影响内置样本常量。
+  const [working, setWorking] = useState<RuleDataset>(() => structuredClone(sample.dataset));
+  useEffect(() => {
+    setWorking(structuredClone(SAMPLES.find((s) => s.key === sampleKey)?.dataset ?? SAMPLES[0].dataset));
+  }, [sampleKey]);
+
+  const report = useMemo(() => runRules(working), [working]);
   const quality = useMemo(() => qualityScore(report), [report]);
-  const recommendations = useMemo(() => recommendRules(sample.dataset), [sample]);
+  const recommendations = useMemo(() => recommendRules(working), [working]);
+
+  const projectState = useMemo<ProjectState>(
+    () => ({
+      version: 2,
+      source: "import",
+      spaces: working.spaces,
+      assets: working.assets,
+      sensors: working.sensors,
+      observations: working.observations,
+      updatedAt: "",
+    }),
+    [working],
+  );
+
+  const fixFor = useCallback((issue: Issue) => proposeFix(issue, projectState), [projectState]);
+  const onApplyFix = useCallback((fix: ProposedFix) => {
+    setWorking((prev) => {
+      const next = applyFixToState(
+        {
+          version: 2,
+          source: "import",
+          spaces: prev.spaces,
+          assets: prev.assets,
+          sensors: prev.sensors,
+          observations: prev.observations,
+          updatedAt: "",
+        },
+        fix,
+      );
+      return {
+        spaces: next.spaces,
+        assets: next.assets,
+        sensors: next.sensors,
+        observations: next.observations,
+      };
+    });
+  }, []);
 
   const filtered = useMemo(
     () => filterByTable(filterBySeverity(report.issues, severity), table),
@@ -102,10 +148,10 @@ export default function ValidatePage() {
   );
 
   const recordCount =
-    sample.dataset.spaces.length +
-    sample.dataset.assets.length +
-    sample.dataset.sensors.length +
-    sample.dataset.observations.length;
+    working.spaces.length +
+    working.assets.length +
+    working.sensors.length +
+    working.observations.length;
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
@@ -144,9 +190,9 @@ export default function ValidatePage() {
           ))}
         </div>
         <p className="mt-3 text-xs text-slate-400">
-          {sample.note} 当前数据集共 {recordCount} 条记录（空间 {sample.dataset.spaces.length} / 设备{" "}
-          {sample.dataset.assets.length} / 测点 {sample.dataset.sensors.length} / 观测{" "}
-          {sample.dataset.observations.length}）。
+          {sample.note} 当前数据集共 {recordCount} 条记录（空间 {working.spaces.length} / 设备{" "}
+          {working.assets.length} / 测点 {working.sensors.length} / 观测{" "}
+          {working.observations.length}）。
         </p>
       </div>
 
@@ -211,7 +257,12 @@ export default function ValidatePage() {
           ))}
         </div>
 
-        <IssueTable title="问题清单（按级别 → 表 → 行号排序）" issues={filtered} />
+        <IssueTable
+          title="问题清单（按级别 → 表 → 行号排序）"
+          issues={filtered}
+          fixResolver={fixFor}
+          onApplyFix={onApplyFix}
+        />
       </div>
 
       <p className="mt-8 text-xs text-slate-400">

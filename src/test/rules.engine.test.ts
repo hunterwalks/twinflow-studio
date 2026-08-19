@@ -21,11 +21,11 @@ describe("规则引擎：干净数据", () => {
     expect(report.issues).toEqual([]);
   });
 
-  it("19 条规则全部执行且全部通过，无跳过", () => {
-    expect(report.ruleCount).toBe(19);
+  it("24 条规则，干净数据零问题（观测类规则因无观测表而跳过）", () => {
+    expect(report.ruleCount).toBe(24);
     expect(report.passedRuleCount).toBe(19);
     expect(report.triggeredRuleCount).toBe(0);
-    expect(report.skippedRuleCount).toBe(0);
+    expect(report.skippedRuleCount).toBe(5);
   });
 
   it("不存在阻断级问题", () => {
@@ -36,9 +36,9 @@ describe("规则引擎：干净数据", () => {
 describe("规则引擎：含问题样例数据", () => {
   const report = runRules(messyPark);
 
-  it("命中 14 条规则（R012 因存在根空间而未命中）", () => {
+  it("命中 14 条规则（R012 因存在根空间而未命中；5 条观测规则因无观测表跳过）", () => {
     expect(report.triggeredRuleCount).toBe(14);
-    expect(report.skippedRuleCount).toBe(0);
+    expect(report.skippedRuleCount).toBe(5);
     const r012 = report.byRule.find((r) => r.ruleId === "R012");
     expect(r012?.count).toBe(0);
     expect(r012?.skipped).toBeNull();

@@ -1,8 +1,8 @@
 {
   "name": "twinflow-studio",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
-  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.8.0: four-table project model with Observation, project JSON import/export, reusable import mapping templates, v1→v2 migration, 19 deterministic rules).",
+  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v0.9.0: 24 deterministic rules, one-click fix preview & apply, project metadata, cross-table search, cross-project comparison).",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",

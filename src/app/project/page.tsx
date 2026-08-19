@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useProject } from "@/lib/project/ProjectProvider";
 import { serializeProject, parseProjectFile } from "@/lib/project/io";
 import { ObjectCounts } from "@/components/ObjectCounts";
 import { getDemoDataset } from "@/lib/data/registry";
-import type { ProjectSource } from "@/lib/project/types";
+import type { ProjectMetadata, ProjectSource } from "@/lib/project/types";
+import { EMPTY_METADATA } from "@/lib/project/types";
+import { searchProject, type SearchHit } from "@/lib/project/search";
 import { APP_VERSION } from "@/lib/version";
 
 const SOURCE_LABEL: Record<ProjectSource, string> = {
@@ -30,11 +32,34 @@ function downloadProject(state: ReturnType<typeof useProject>["state"]) {
 }
 
 export default function ProjectPage() {
-  const { state, isEmpty, loadDemo, clear, importProject } = useProject();
+  const { state, isEmpty, loadDemo, clear, importProject, updateMetadata } = useProject();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
+
+  // 元信息编辑草稿：state.metadata 变化（保存 / 导入 / 清空）时重新同步
+  const [draft, setDraft] = useState<ProjectMetadata>(() => ({
+    ...EMPTY_METADATA,
+    ...(state.metadata ?? {}),
+  }));
+  const [metaOk, setMetaOk] = useState(false);
+  useEffect(() => {
+    setDraft({ ...EMPTY_METADATA, ...(state.metadata ?? {}) });
+  }, [state.metadata]);
+
+  function onSaveMetadata() {
+    updateMetadata({
+      name: draft.name.trim(),
+      description: draft.description.trim(),
+      owner: draft.owner.trim(),
+    });
+    setMetaOk(true);
+  }
+
+  // 跨表检索
+  const [query, setQuery] = useState("");
+  const results: SearchHit[] = searchProject(state, query);
 
   function onExport() {
     setError(null);
@@ -86,7 +111,8 @@ export default function ProjectPage() {
 
       <p className="mt-3 text-sm leading-6 text-slate-500">
         v0.8.0 起，项目由 Space / Asset / Sensor / Observation 四张表组成，可整体导出为单个 JSON
-        文件并在任意设备恢复。导入为覆盖式：会用文件内容整体替换当前项目。全部在浏览器本地完成，不上传数据。
+        文件并在任意设备恢复；v0.9.0 起可补充项目元信息（名称 / 描述 / 负责人）并跨四表检索。
+        导入为覆盖式：会用文件内容整体替换当前项目。全部在浏览器本地完成，不上传数据。
       </p>
 
       {/* 当前项目概览 */}
@@ -108,6 +134,99 @@ export default function ProjectPage() {
         <p className="mt-3 text-xs text-slate-400">
           最近更新：{state.updatedAt || "尚无更新"} · 合计 {total} 条记录
         </p>
+      </section>
+
+      {/* 项目元信息 */}
+      <section className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-800">项目信息</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          为项目补充名称、描述与负责人，随项目 JSON 一起导出与恢复，便于归档与多项目区分。
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm text-slate-600">
+            项目名称
+            <input
+              data-testid="project-metadata-name"
+              value={draft.name}
+              onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+              placeholder="例如：华东智慧工厂数字孪生"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="block text-sm text-slate-600">
+            负责人
+            <input
+              data-testid="project-metadata-owner"
+              value={draft.owner}
+              onChange={(e) => setDraft((d) => ({ ...d, owner: e.target.value }))}
+              placeholder="例如：Hunter"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="block text-sm text-slate-600 sm:col-span-2">
+            项目描述
+            <textarea
+              data-testid="project-metadata-desc"
+              value={draft.description}
+              onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+              placeholder="项目范围、数据来源、治理目标等"
+              rows={2}
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            />
+          </label>
+        </div>
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            type="button"
+            data-testid="project-metadata-save"
+            onClick={onSaveMetadata}
+            className="inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+          >
+            保存项目信息
+          </button>
+          {metaOk && (
+            <span data-testid="project-metadata-saved" className="text-sm text-emerald-600">
+              已保存。
+            </span>
+          )}
+        </div>
+      </section>
+
+      {/* 跨表检索 */}
+      <section className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-800">跨表检索</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          在 Space / Asset / Sensor / Observation 四张表中按 ID 或名称模糊查找记录，快速定位数据。
+        </p>
+        <input
+          data-testid="project-search-input"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="输入 ID 或名称片段，例如：OB-10 / 温度"
+          className="mt-4 w-full max-w-md rounded-md border border-slate-200 px-3 py-2 text-sm"
+        />
+        {query.trim() !== "" && (
+          <div data-testid="project-search-results" className="mt-4">
+            {results.length === 0 ? (
+              <p className="text-sm text-slate-400">未找到匹配记录。</p>
+            ) : (
+              <ul className="divide-y divide-slate-100 rounded-md border border-slate-100">
+                {results.map((r) => (
+                  <li key={`${r.table}-${r.rowIndex}`} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-sm">
+                    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                      {r.tableLabel}
+                    </span>
+                    <span className="font-mono text-xs text-slate-400">{r.recordId || "（无ID）"}</span>
+                    <span className="font-medium text-slate-700">{r.name}</span>
+                    <span className="text-xs text-slate-400">
+                      {r.matchedField === "id" ? "ID 命中" : "名称命中"}：{r.matchedValue} · 第 {r.rowIndex + 1} 行
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </section>
 
       {/* 导出 */}

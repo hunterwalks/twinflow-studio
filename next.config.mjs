@@ -9,6 +9,13 @@ const nextConfig = {
   reactStrictMode: true,
   // lint 已在 CI / 本地作为独立质量门运行，构建内不再重复执行 ESLint
   eslint: { ignoreDuringBuilds: true },
+  // 类型检查由独立的 `tsc --noEmit` 质量门负责（见 package.json scripts），
+  // 构建内不再重复执行，避免重复耗时。
+  typescript: { ignoreBuildErrors: true },
+  // 构建 worker 限制为 1 个：本机 Windows 环境下 jest-worker 并发派生多个子进程时，
+  // 偶发 STATUS_DLL_INIT_FAILED (0xC0000142) 导致构建崩溃；单 worker 稳定。
+  // 本项目仅 10 个静态页，CI（ubuntu）无此问题且性能影响可忽略。
+  experimental: { cpus: 1 },
   ...(isExport
     ? {
         output: "export",

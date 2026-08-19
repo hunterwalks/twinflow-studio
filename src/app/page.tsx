@@ -3,7 +3,7 @@ import { APP_VERSION } from "@/lib/version";
 
 const STEPS = [
   { n: 1, title: "打开 Demo", desc: "一键载入合成数据集，立刻看到 Space / Asset / Sensor / Observation 四类对象。" },
-  { n: 2, title: "校验质量", desc: "运行 19 条确定性规则，查看分级且可溯源的问题清单与质量评分。" },
+  { n: 2, title: "校验质量", desc: "运行 24 条确定性规则，查看分级且可溯源的问题清单与质量评分。" },
   { n: 3, title: "看关系图", desc: "在关系图中查看层级与引用，孤立或悬空对象会被高亮标注原因。" },
   { n: 4, title: "导入你的表", desc: "选择本地 CSV / Excel，映射字段并即时校验，全程不上传。" },
   { n: 5, title: "导出报告", desc: "一键生成自包含 HTML / JSON 治理报告，可离线打开与归档。" },
@@ -79,7 +79,7 @@ export default function HomePage() {
       <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-800">校验数据质量</h2>
         <p className="mt-2 text-sm text-slate-500">
-          对内置 Demo 或含问题样例运行 19 条确定性校验规则，得到分级（错误 / 警告 / 提示）
+          对内置 Demo 或含问题样例运行 24 条确定性校验规则，得到分级（错误 / 警告 / 提示）
           且可溯源（表 / 行号 / 记录 ID / 字段）的问题清单，每条问题附带修复建议。
         </p>
         <Link
@@ -121,6 +121,21 @@ export default function HomePage() {
         </Link>
       </div>
 
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-800">跨项目对比</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          并排对比当前项目与内置样例（或任意两个样例）的记录规模、质量评分、问题分布与命中规则，
+          快速判断数据治理成效与差异。
+        </p>
+        <Link
+          href="/compare"
+          data-testid="home-open-compare"
+          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
+        >
+          打开对比 →
+        </Link>
+      </div>
+
       {/* 本地优先与隐私说明 */}
       <section className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600" data-testid="home-privacy">
         <h2 className="font-semibold text-slate-800">数据在本地处理</h2>
@@ -134,7 +149,7 @@ export default function HomePage() {
       <p className="mt-10 text-xs text-slate-400">
         当前为 v{APP_VERSION}：在 v0.7.0 之上，将项目升级为 Space / Asset / Sensor / Observation 四表模型，
         支持项目 JSON 整体导入 / 导出（兼容 v1 旧项目自动迁移）与导入映射模板复用；
-        校验规则增至 19 条，覆盖观测引用完整性、时间戳、数值与同测点重复时间戳。全部为纯函数、可离线、可测试，无外部 AI 依赖。
+        校验规则增至 24 条，覆盖观测引用完整性、时间戳、数值、同测点重复时间戳，以及观测量纲/单位、质量标记、时间合理性与测点覆盖度。全部为纯函数、可离线、可测试，无外部 AI 依赖。
       </p>
     </main>
   );
