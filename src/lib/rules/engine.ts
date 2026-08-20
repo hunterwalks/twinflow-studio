@@ -126,6 +126,76 @@ export function runRules(dataset: RuleDataset, rules: Rule[] = ALL_RULES): Valid
   };
 }
 
+/** 分块校验进度回调。 */
+export interface BatchProgress {
+  /** 已完成的规则数 */
+  completed: number;
+  /** 规则总数 */
+  total: number;
+}
+
+export interface BatchOptions {
+  /** 每批规则数（默认 8） */
+  batchSize?: number;
+  /** 每批完成后回调（供 UI 展示进度 / 让出主线程） */
+  onBatch?: (progress: BatchProgress) => void;
+}
+
+/**
+ * 分块校验（v1.0.0）：按规则分批执行并合并，结果与 runRules 完全等价（确定性）。
+ * 适用于大表场景：可在批次之间让出主线程（async 包装）或展示进度。
+ * 合并逻辑保持规则原始顺序：issues 统一按 compareIssues 排序，计数重新汇总。
+ */
+export function runRulesInBatches(
+  dataset: RuleDataset,
+  rules: Rule[] = ALL_RULES,
+  opts?: BatchOptions,
+): ValidationReport {
+  const batchSize = Math.max(1, opts?.batchSize ?? 8);
+  const total = rules.length;
+
+  let allIssues: Issue[] = [];
+  let byRule: RuleSummary[] = [];
+  let triggeredRuleCount = 0;
+  let passedRuleCount = 0;
+  let skippedRuleCount = 0;
+
+  for (let i = 0; i < total; i += batchSize) {
+    const chunk = rules.slice(i, i + batchSize);
+    const report = runRules(dataset, chunk);
+    allIssues = allIssues.concat(report.issues);
+    byRule = byRule.concat(report.byRule);
+    triggeredRuleCount += report.triggeredRuleCount;
+    passedRuleCount += report.passedRuleCount;
+    skippedRuleCount += report.skippedRuleCount;
+    opts?.onBatch?.({ completed: Math.min(total, i + chunk.length), total });
+  }
+
+  allIssues.sort(compareIssues);
+
+  const totals = zeroSeverity();
+  const byTable = zeroTable();
+  const byCategory = zeroCategory();
+  for (const issue of allIssues) {
+    totals[issue.severity] += 1;
+    totals.all += 1;
+    byTable[issue.table] += 1;
+    byCategory[issue.category] += 1;
+  }
+
+  return {
+    issues: allIssues,
+    totals,
+    byTable,
+    byCategory,
+    byRule,
+    ruleCount: total,
+    triggeredRuleCount,
+    passedRuleCount,
+    skippedRuleCount,
+  };
+}
+
 /** 按级别筛选问题。 */
 export function filterBySeverity(issues: Issue[], severity: Severity | "all"): Issue[] {
   if (severity === "all") return issues;

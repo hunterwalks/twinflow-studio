@@ -4,6 +4,7 @@ import "./globals.css";
 import "@xyflow/react/dist/style.css";
 import { ProjectProvider } from "@/lib/project/ProjectProvider";
 import { StorageBanner } from "@/components/StorageBanner";
+import { NavBar } from "@/components/NavBar";
 
 export const metadata: Metadata = {
   title: "TwinFlow Studio",
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen">
         <ProjectProvider>
           <StorageBanner />
+          <NavBar />
           {children}
         </ProjectProvider>
       </body>

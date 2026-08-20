@@ -4,11 +4,11 @@
 
 TwinFlow Studio 面向数字孪生产品、解决方案、实施和数据人员，帮助在项目早期从 Excel / CSV 资产资料中识别业务对象、建立空间与设备关系、检查数据质量并形成可追溯治理报告。
 
-**当前版本：v0.9.0（从「能校验」到「能治理」：24 条确定性规则 + 一键修复预览/应用 + 项目元信息 + 跨表检索 + 跨项目对比）**
+**当前版本：v1.0.0（首个稳定可公开推荐版本：24 条确定性规则 + 一键修复预览/应用 + 项目元信息 + 跨表检索 + 跨项目对比 + 大表虚拟滚动 + 分块校验 + 离线帮助）**
 
 - 产品定位与边界见 `02_Context/Project_Context.md` 与 `02_Context/Roadmap_V0.7-V2.0.md`
 - 执行交接见根目录 `WORKBUDDY_HY3_HANDOFF.md`
-- 本仓库当前只承载 v0.1.0–v0.8.0 范围，不提前实现后续版本功能（v0.9+ 见 Roadmap）
+- 本仓库已落地 v0.1.0–v1.0.0；v1.1+ 行业适配与平台化能力见 Roadmap，未提前实现
 
 ## v0.1.0 能力范围
 
@@ -107,6 +107,24 @@ TwinFlow Studio 面向数字孪生产品、解决方案、实施和数据人员�
 - **跨项目对比**（`src/lib/compare.ts` + `/compare` 页）：并排对比当前项目与内置样例的记录规模、质量评分、问题分布与 Top 3 问题规则，数值差异自动标注更优方。
 - 版本号升至 v0.9.0；首页、README、CHANGELOG 同步更新；新增 `scripts/build-local.sh` 解决 Windows 本机 `next build` worker 崩溃与清理超时问题（`experimental.cpus: 1` + 覆盖 `NODE_OPTIONS`）。
 
+## v1.0.0 新增：首个稳定可公开推荐版本
+
+> 路线图阶段 A 收官：让陌生用户无需改代码即可稳定走完「导入 → 建模 → 校验 → 修复 → 导出 / 对比」全链路，并明确隐私与数据安全边界。不引入 AI / 后端，全部为确定性纯函数与本地计算。
+
+- **全局导航栏**（`src/components/NavBar.tsx` + `layout.tsx`）：所有页面统一入口，含「帮助」离线页；版本号常驻展示。
+- **离线帮助页 `/help`**：内置快速开始、隐私与安全（本地优先 / 无 AI 外发 / 本地存储键名与清空方式）、四表数据模型说明与常见问题（FAQ），完全离线可读。
+- **大表虚拟滚动**（`src/components/DataTable.tsx` + `src/lib/table.ts` 的 `visibleRange`）：超过 100 行时仅渲染可视区间行（固定行高窗口化），并增加防御性边界收敛，避免越界输入导致 offsetY 溢出或空渲染。
+- **分块校验**（`src/lib/rules/engine.ts` 的 `runRulesInBatches`）：按规则分批执行并合并，结果与 `runRules` 完全等价（确定性）；为后续大表异步分批校验留出统一入口，导入流程已切换接入。
+- **示例工作流（案例）**：见下方「示例工作流」一节——从合成工业园区数据集出发，演示「载入 → 校验 → 修复 → 导出报告 → 跨项目对比」的完整治理闭环。
+
+### 示例工作流（案例）
+
+1. 首页点击「从 Demo 开始」载入内置合成工业园区（四表，零规则误报基线）。
+2. 进入「校验数据」，运行 24 条确定性规则，查看分级、可溯源问题清单与质量评分（0–100 / 等级 A–E）。
+3. 对可修复问题（如多余空白、超长名称、父级自引用、单位不归一）点击「应用修复」，系统生成 before→after 预览并即时复检。
+4. 进入「报告」导出自包含 HTML / JSON 治理报告；或进入「对比」并排评估当前项目与内置样例的治理成效。
+5. 进入「项目」编辑元信息、跨表检索，并整体导出为单个 JSON 文件在任意设备恢复。
+
 ### 技术说明（v0.5.0）
 
 - 映射建议、质量评分、规则建议均为 **纯函数、确定性、无 AI / 无网络**，与 v0.1–v0.4 的 local-first 设计一致，可直接单元测试。
@@ -164,31 +182,36 @@ npm run start
 ```
 twinflow-studio/
 ├── src/
-│   ├── app/                 # Next.js App Router（首页 / demo / import / validate / graph / report / project 页）
-│   ├── components/          # UI 组件（数据表、计数、空/错误态、校验汇总/问题清单）
+│   ├── app/                 # Next.js App Router（首页 / demo / import / validate / graph / report / project / compare / help 页）
+│   ├── components/          # UI 组件（数据表、计数、空/错误态、校验汇总/问题清单、导航栏 NavBar）
 │   ├── lib/
+│   │   ├── version.ts       # 应用版本号（单一来源）
 │   │   ├── types.ts         # Zod 领域模型（Space/Asset/Sensor/Observation）
 │   │   ├── data/            # 合成工业园区 fixture（含问题样例）+ 城市基础设施双数据集
 │   │   ├── loadDemo.ts      # Demo 加载状态机 + 计数（四表）
-│   │   ├── table.ts         # 工作表预览列/行派生（含 Observation 列）
+│   │   ├── table.ts         # 工作表预览列/行派生（含 Observation 列）+ visibleRange 虚拟滚动区间
+│   │   ├── fixes.ts         # v0.9.0 问题修复预览引擎（提出/应用确定性修复）
+│   │   ├── compare.ts       # v0.9.0 跨项目对比画像聚合
 │   │   ├── rules/           # v0.3.0 校验规则引擎（纯 TS）
 │   │   │   ├── types.ts          # Issue / Rule / 分级 / 类别
 │   │   │   ├── dataset.ts        # 宽松数据集与上下文构建（四表）
 │   │   │   ├── spec.ts           # 字段标签、必填、引用、命名等规范常量
 │   │   │   ├── define.ts         # 规则定义工厂
-│   │   │   ├── rules/*.ts        # 类别文件承载 19 条规则（含 observation.ts R016–R019）
+│   │   │   ├── rules/*.ts        # 类别文件承载 24 条规则（含 observation.ts R016–R024）
 │   │   │   ├── registry.ts       # 规则注册表（ALL_RULES）
-│   │   │   ├── engine.ts         # runRules / 排序 / 筛选 / 溯源
+│   │   │   ├── engine.ts         # runRules / runRulesInBatches（分块校验）/ 排序 / 筛选 / 溯源
 │   │   │   └── index.ts          # 对外出口
 │   │   ├── graph/           # v0.4.0 关系图：types / orphans（孤立识别）/ layout（确定性布局）
-│   │   ├── project/         # v0.4.0 项目状态与持久化：types / persist（v1→v2 迁移）/ ProjectProvider / io（项目 JSON 导入导出）
+│   │   ├── project/         # v0.4.0 项目状态与持久化：types / persist（v1→v2 迁移）/ ProjectProvider / io（项目 JSON 导入导出）/ search（跨表检索）
 │   │   ├── report/          # v0.6.0 报告导出：types / build（聚合）/ exporters（JSON+HTML）/ download
 │   │   └── import/          # v0.2.0 导入：解析 / 目标字段 / 映射与校验 / templates（映射模板复用）
 │   │       ├── parse.ts          # CSV/XLSX → {sheets, rows}
 │   │       ├── fieldTargets.ts   # 目标字段定义与表头别名（含 observation）
 │   │       ├── mapping.ts        # 表头自动匹配 + 列→记录 + Zod 校验
 │   │       └── templates.ts      # 导入映射模板持久化与复用
-│   └── test/                # Vitest 单元测试（含 import、rules、project、io、templates）
+│   └── test/                # Vitest 单元测试（含 import、rules、project、io、templates、fixes、compare、table、batch）
+├── e2e/                     # Playwright E2E 主流程（flows / v08 / v09 / v10）
+├── scripts/                 # build-local.sh（Windows 本机构建稳健化）
 ├── .gitignore               # 忽略 .env、密钥与构建产物
 ├── CHANGELOG.md             # 版本变更记录
 └── LICENSE                  # MIT
@@ -200,19 +223,37 @@ twinflow-studio/
 - 仓库不保存 API Key、账号凭据或个人敏感信息。
 - 公开仓库只能使用合成数据、脱敏数据和确认可公开的材料。
 
-## 隐私与本地处理（v0.7.0）
+## 隐私与本地处理（v1.0.0）
 
-- **所有数据在浏览器本地处理**：CSV / XLSX 解析、字段映射、校验、关系图与报告导出全部在浏览器内完成，不会上传到任何业务后端（可用浏览器开发者工具的网络面板验证：导入/校验/导出过程无任何外部请求）。
+- **所有数据在浏览器本地处理**：CSV / XLSX 解析、字段映射、校验、关系图、修复与报告导出全部在浏览器内完成，不会上传到任何业务后端（可用浏览器开发者工具的网络面板验证：导入/校验/导出过程无任何外部请求）。
+- **无 AI 外发**：核心功能为确定性纯函数，**无需配置任何 API Key** 即可完整使用；本产品不内置会外发数据的 AI 调用。
 - **项目自动保存在本地**：当前数据集写入浏览器 `localStorage`（键 `twinflow-project-v1`），刷新或重开页面后自动恢复。
 - **清空本地数据**：进入「关系图」页点击「清空项目」，或在浏览器设置中清除本站数据。
 - **localStorage 不可用时**：若浏览器禁用了本地存储（隐私模式 / 站点数据被阻止），顶部会出现黄色提示，说明数据将无法在刷新后恢复及恢复方式；应用仍可正常使用，只是不持久化。
+- 更多细节见应用内 **`/help`** 离线帮助页。
 
-## 已知问题（v0.7.0）
+## 已知问题（v1.0.0）
 
 - 静态导出（GitHub Pages）依赖 `EXPORT=true` 与 `BASE_PATH`；本地 `npm run dev` / `npm run build` 不受影响，沿用常规路由。
 - Playwright E2E 在 CI 中以 `chromium` 运行；本地需先 `npx playwright install chromium`。
 - 关系图为分层基础布局，未做复杂自动布局编辑；拖拽交互为 React Flow 内置能力。
 - 模糊映射与规则建议均为确定性启发式，低置信项已标记「需复核」，建议人工确认。
+- 导入为覆盖式写入本地项目，建议在导入前保留源文件副本；校验与修复不修改原始源文件。
+
+## 贡献指南
+
+欢迎以 Issue、Pull Request 或讨论的形式参与。
+
+- **问题反馈**：在 GitHub 仓库提交 Issue，尽量附上复现步骤、使用的样例数据集与期望行为。
+- **开发流程**：Fork 后本地 `npm install` → `npm run dev`；提交前请保证五道质量门通过：
+  - `npm run typecheck`（TypeScript 类型检查）
+  - `npm run lint`（ESLint CLI）
+  - `npm run test`（Vitest 单元测试）
+  - `npm run build`（生产构建）
+  - `npm run test:e2e`（Playwright E2E，需先 `npx playwright install chromium`）
+- **代码原则**：核心逻辑保持为**纯函数、确定性、可单元测试**；新增校验规则请一并补充触发与不触发用例；不引入业务后端、数据库、认证或远程上传，保持 local-first。
+- **数据与隐私**：仓库仅使用合成数据，不提交真实客户、个人或敏感信息；不得向仓库写入 API Key 或凭据。
+- **版本治理**：遵循 SemVer；每次发布需有独立 Task / 范围 / 非目标 / 验收条件、CHANGELOG 记录、已知问题与升级/回退说明。
 
 ## 许可
 

@@ -31,7 +31,7 @@ import { IssueTable } from "@/components/IssueTable";
 import { QualityScoreCard } from "@/components/QualityScoreCard";
 import { RuleRecommendations } from "@/components/RuleRecommendations";
 import { makeDataset } from "@/lib/rules/dataset";
-import { runRules } from "@/lib/rules/engine";
+import { runRulesInBatches } from "@/lib/rules/engine";
 import { qualityScore, type QualityScore } from "@/lib/quality/score";
 import { recommendRules, type RuleRecommendation } from "@/lib/quality/recommend";
 import {
@@ -194,7 +194,8 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observ
     const dataset: RuleDataset = { spaces: [], assets: [], sensors: [], observations: [] };
     dataset[PLURAL[target]] = records as LooseRecord[];
     const fullDataset = makeDataset({ [PLURAL[target]]: dataset[PLURAL[target]] });
-    const report = runRules(fullDataset);
+    // v1.0.0：分块校验（结果与 runRules 等价），为后续大表异步分批校验留出统一入口。
+    const report = runRulesInBatches(fullDataset, undefined, { batchSize: 8 });
     setValidationReport(report);
     setQuality(qualityScore(report));
     setRecommendations(recommendRules(fullDataset));
