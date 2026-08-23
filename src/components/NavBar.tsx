@@ -8,14 +8,17 @@ import { APP_VERSION } from "@/lib/version";
 interface NavItem {
   href: string;
   label: string;
-  group: "data" | "govern" | "advanced";
+  group: "modeling" | "govern" | "advanced";
 }
 
+// 分组：首页独立常驻品牌区；业务入口分三组。
+// 数据建模：导入 / 项目 / 关系图（建数据、看结构）
+// 质量治理：校验 / 报告 / 对比（查问题、出成果）
+// 高级工具：模型 / 帮助
 const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "首页", group: "data" },
-  { href: "/import", label: "导入", group: "data" },
-  { href: "/project", label: "项目", group: "data" },
-  { href: "/graph", label: "关系图", group: "data" },
+  { href: "/import", label: "导入", group: "modeling" },
+  { href: "/project", label: "项目", group: "modeling" },
+  { href: "/graph", label: "关系图", group: "modeling" },
   { href: "/validate", label: "校验", group: "govern" },
   { href: "/report", label: "报告", group: "govern" },
   { href: "/compare", label: "对比", group: "govern" },
@@ -24,10 +27,12 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const GROUP_LABELS: Record<NavItem["group"], string> = {
-  data: "数据",
-  govern: "治理",
-  advanced: "高级",
+  modeling: "数据建模",
+  govern: "质量治理",
+  advanced: "高级工具",
 };
+
+const GROUP_ORDER: NavItem["group"][] = ["modeling", "govern", "advanced"];
 
 function isActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
@@ -40,44 +45,54 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
-      className={`rounded px-2 py-1 text-sm transition-colors ${
-        active
-          ? "bg-brand-50 font-semibold text-brand-700"
-          : "text-slate-500 hover:text-brand-600 hover:underline"
-      }`}
       data-testid={`nav-${item.href === "/" ? "home" : item.href.slice(1)}`}
       data-active={active ? "true" : "false"}
+      className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+        active
+          ? "bg-brand-600 text-white shadow-sm"
+          : "text-slate-600 hover:bg-slate-100 hover:text-brand-700"
+      }`}
     >
       {item.label}
     </Link>
   );
 }
 
-/** 全局顶部导航（v1.3.0）：分组入口 + 当前页高亮 + 窄屏折叠抽屉。 */
+/** 全局顶部导航（v1.3.1）：首页独立 + 数据建模/质量治理/高级工具 三段分组，实色高亮。 */
 export function NavBar() {
   const pathname = usePathname() ?? "/";
   const [open, setOpen] = useState(false);
 
-  const groups: NavItem["group"][] = ["data", "govern", "advanced"];
-
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center gap-x-4 px-6 py-3">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-slate-900" data-testid="nav-logo">
-          <span className="flex h-6 w-6 items-center justify-center rounded bg-brand-600 text-xs font-bold text-white">
+    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="mx-auto flex max-w-6xl items-center gap-x-4 px-4 py-2.5 sm:px-6">
+        {/* 品牌区：首页独立常驻 */}
+        <Link
+          href="/"
+          data-testid="nav-logo"
+          className="flex shrink-0 items-center gap-2 rounded-md px-2 py-1 font-semibold text-slate-900 hover:bg-slate-100"
+        >
+          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-600 text-sm font-bold text-white">
             T
           </span>
-          <span>TwinFlow Studio</span>
+          <span className="hidden sm:inline">TwinFlow Studio</span>
           <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-500">
             v{APP_VERSION}
           </span>
         </Link>
 
-        {/* 桌面端：分组导航 */}
-        <nav className="hidden flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-sm md:flex" data-testid="nav-desktop">
-          {groups.map((g) => (
-            <div key={g} className="flex items-center gap-x-2">
-              <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+        {/* 桌面端：三段分组导航，单行不折行 */}
+        <nav
+          className="hidden flex-1 items-center gap-2 overflow-x-auto md:flex"
+          data-testid="nav-desktop"
+          aria-label="主导航"
+        >
+          {GROUP_ORDER.map((g) => (
+            <div
+              key={g}
+              className="flex shrink-0 items-center gap-1 rounded-lg bg-slate-50 px-2 py-1 ring-1 ring-inset ring-slate-200"
+            >
+              <span className="select-none px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                 {GROUP_LABELS[g]}
               </span>
               {NAV_ITEMS.filter((i) => i.group === g).map((i) => (
@@ -94,7 +109,7 @@ export function NavBar() {
           aria-label="切换导航菜单"
           aria-expanded={open}
           data-testid="nav-toggle"
-          className="ml-auto rounded p-1.5 text-slate-600 hover:bg-slate-100 md:hidden"
+          className="ml-auto rounded-md p-2 text-slate-600 hover:bg-slate-100 md:hidden"
         >
           <span className="block h-0.5 w-5 bg-current" />
           <span className="mt-1 block h-0.5 w-5 bg-current" />
@@ -104,11 +119,17 @@ export function NavBar() {
 
       {/* 移动端：折叠抽屉 */}
       {open && (
-        <nav className="border-t border-slate-100 px-6 py-3 md:hidden" data-testid="nav-mobile">
-          {groups.map((g) => (
-            <div key={g} className="mb-2">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">{GROUP_LABELS[g]}</p>
-              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+        <nav
+          className="border-t border-slate-100 bg-white px-4 py-3 md:hidden"
+          data-testid="nav-mobile"
+          aria-label="主导航（移动）"
+        >
+          {GROUP_ORDER.map((g) => (
+            <div key={g} className="mb-3 last:mb-0">
+              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                {GROUP_LABELS[g]}
+              </p>
+              <div className="flex flex-wrap gap-2">
                 {NAV_ITEMS.filter((i) => i.group === g).map((i) => (
                   <span key={i.href} onClick={() => setOpen(false)}>
                     <NavLink item={i} pathname={pathname} />

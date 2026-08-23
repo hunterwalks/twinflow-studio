@@ -2,6 +2,18 @@
 
 所有重要变更记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循 [SemVer](https://semver.org/)。
 
+## [1.3.1] - 2026-08-24
+
+> 导航栏观感补丁（v1.3.0 发布后用户反馈"效果差、不如预期"）。纯 UI 重构，不新增业务对象、不新增校验规则、不改动既有页面功能。
+
+### Changed
+- **导航分组重构**（`components/NavBar.tsx`）：首页从分组中独立为常驻品牌区；业务入口改为「数据建模（导入 / 项目 / 关系图）— 质量治理（校验 / 报告 / 对比）— 高级工具（模型 / 帮助）」三段，更贴合用户心智。
+- **视觉强化**：每组用浅灰圆角分段容器（`ring` 描边）区隔，分组标签加粗小字；当前页高亮由浅蓝底灰字升级为**实色品牌底 + 白字 + 阴影**，对比度拉满；桌面端导航单行不折行（`overflow-x-auto` 兜底），移动端保留抽屉。
+- 版本号升至 v1.3.1；`src/lib/version.ts` 与 `package.json` 同步更新。
+
+### Quality
+- 保留既有 `data-testid` 契约（nav-logo / nav-import / nav-project / nav-graph / nav-validate / nav-report / nav-compare / nav-model / nav-help / nav-toggle / nav-desktop / nav-mobile）；typecheck / ESLint / 单测（≥233 项不回退）复核。E2E 因本地 sandbox 无法起服务，留 CI（ubuntu）跑全绿。
+
 ## [1.3.0] - 2026-08-23
 
 > 可用性硬化三连第一版：导航与首页重构 + 开源贡献指南（源自 v1.2.0 线上点击测试与整体分析）。在不新增业务对象、不新增校验规则（保持 24 条）、不接入外部 AI 运行时的前提下，把前端收口为"进得来、知道下一步、反馈明确"。
