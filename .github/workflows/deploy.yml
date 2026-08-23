@@ -40,7 +40,6 @@ jobs:
         env:
           EXPORT: "true"
           BASE_PATH: "/twinflow-studio"
-          NODE_OPTIONS: "--use-system-ca"
         run: npm run build
 
       - name: Upload Pages artifact
