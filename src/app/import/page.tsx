@@ -58,8 +58,43 @@ const METHOD_LABEL: Record<MappingMethod, string> = {
 
 const PREVIEW_LIMIT = 50;
 
+/** 工作表名 → 目标类型的自动识别别名（含中英文）。 */
+const SHEET_ALIASES: Record<ImportTargetType, string[]> = {
+  space: ["space", "spaces", "空间", "园区", "区域", "楼层", "厂房"],
+  asset: ["asset", "assets", "资产", "设备", "装置"],
+  sensor: ["sensor", "sensors", "传感器", "测点", "点位"],
+  observation: ["observation", "observations", "观测", "读数", "数据", "测值"],
+};
+
+function matchSheetTarget(name: string): ImportTargetType | null {
+  const norm = name.trim().toLowerCase();
+  for (const t of TARGET_TYPES) {
+    if (SHEET_ALIASES[t.key].some((a) => norm.includes(a.toLowerCase()))) {
+      return t.key;
+    }
+  }
+  return null;
+}
+
 function sourceForTarget(mapping: Mapping, targetKey: string): string {
   return Object.keys(mapping).find((src) => mapping[src] === targetKey) ?? "";
+}
+
+interface BatchTableResult {
+  target: ImportTargetType;
+  name: string;
+  valid: number;
+  errors: number;
+}
+
+interface BatchResult {
+  totalSheets: number;
+  matched: number;
+  skipped: { name: string }[];
+  perTable: BatchTableResult[];
+  report: ValidationReport;
+  quality: QualityScore;
+  recommendations: RuleRecommendation[];
 }
 
 export default function ImportPage() {
@@ -76,6 +111,7 @@ export default function ImportPage() {
   const [templates, setTemplates] = useState<MappingTemplate[]>([]);
   const [templateName, setTemplateName] = useState("");
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [batch, setBatch] = useState<BatchResult | null>(null);
   const applyingTemplate = useRef<MappingTemplate | null>(null);
   const { importTable } = useProject();
 
@@ -84,12 +120,12 @@ export default function ImportPage() {
     setTemplates(loadTemplates());
   }, []);
 
-const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observations"> = {
-  space: "spaces",
-  asset: "assets",
-  sensor: "sensors",
-  observation: "observations",
-};
+  const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observations"> = {
+    space: "spaces",
+    asset: "assets",
+    sensor: "sensors",
+    observation: "observations",
+  };
 
   const currentSheet = useMemo(
     () => (parse && parse.ok ? parse.sheets[selectedSheet] ?? null : null),
@@ -119,6 +155,14 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observ
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suggestions]);
 
+  // v1.2.0：多表批量导入前，按工作表名预计算匹配结果（仅展示，不写状态）
+  const sheetMatches = useMemo(() => {
+    if (!parse || !parse.ok) return [];
+    return parse.sheets.map((s) => ({ name: s.name, target: matchSheetTarget(s.name) }));
+  }, [parse]);
+
+  const batchReady = parse?.ok && parse.sheets.length > 1 && sheetMatches.some((m) => m.target);
+
   function onApplyTemplate(id: string) {
     const tpl = templates.find((t) => t.id === id);
     if (!tpl) return;
@@ -147,6 +191,7 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observ
     setValidationReport(null);
     setQuality(null);
     setRecommendations([]);
+    setBatch(null);
     setSelectedSheet(0);
     setFileName(file.name);
 
@@ -202,12 +247,49 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observ
     importTable(PLURAL[target], outcome.valid);
   }
 
+  // v1.2.0：多表批量导入向导。按表名自动匹配四表，顺序导入并给出合并校验摘要。
+  function onBatchImport() {
+    if (!parse || !parse.ok) return;
+    const all: RuleDataset = { spaces: [], assets: [], sensors: [], observations: [] };
+    const perTable: BatchTableResult[] = [];
+    const skipped: { name: string }[] = [];
+    let matched = 0;
+
+    for (const sheet of parse.sheets) {
+      const t = matchSheetTarget(sheet.name);
+      if (!t) {
+        skipped.push({ name: sheet.name });
+        continue;
+      }
+      const autoMapping = suggestMappings(t, sheet.headers).mapping;
+      const records = buildRecords(sheet.rows, autoMapping);
+      const outcome = validateImport(records, t);
+      importTable(PLURAL[t], outcome.valid);
+      (all[PLURAL[t]] as LooseRecord[]).push(...(outcome.valid as LooseRecord[]));
+      perTable.push({ target: t, name: sheet.name, valid: outcome.valid.length, errors: outcome.errors.length });
+      matched += 1;
+    }
+
+    const fullDataset = makeDataset(all);
+    const report = runRulesInBatches(fullDataset, undefined, { batchSize: 8 });
+    setBatch({
+      totalSheets: parse.sheets.length,
+      matched,
+      skipped,
+      perTable,
+      report,
+      quality: qualityScore(report),
+      recommendations: recommendRules(fullDataset),
+    });
+  }
+
   function onReset() {
     setParse(null);
     setOutcome(null);
     setValidationReport(null);
     setQuality(null);
     setRecommendations([]);
+    setBatch(null);
     setFileName("");
     setSelectedSheet(0);
     setMapping({});
@@ -332,6 +414,94 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observ
       {/* 解析成功后的主流程 */}
       {parse && parse.ok && (
         <div className="mt-6 space-y-6">
+          {/* v1.2.0：多表批量导入向导 */}
+          {batchReady && (
+            <div className="rounded-lg border border-brand-200 bg-brand-50 p-5 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-800">多表批量导入（自动匹配四表）</h2>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                检测到 {parse.sheets.length} 个工作表，已按表名自动识别：
+              </p>
+              <ul className="mt-2 space-y-1 text-xs text-slate-600">
+                {sheetMatches.map((m) => (
+                  <li key={m.name} className="flex items-center gap-2">
+                    <span className="flex-1 truncate">{m.name}</span>
+                    {m.target ? (
+                      <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-700">
+                        → {TARGET_TYPES.find((t) => t.key === m.target)?.label}
+                      </span>
+                    ) : (
+                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-500">未识别</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                data-testid="import-batch"
+                onClick={onBatchImport}
+                className="mt-3 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
+              >
+                一键自动匹配并导入四表
+              </button>
+            </div>
+          )}
+
+          {/* 批量导入结果（合并校验摘要） */}
+          {batch && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-400">
+                  已自动导入 {batch.matched} / {batch.totalSheets} 个工作表
+                  {batch.skipped.length > 0
+                    ? `；未识别 ${batch.skipped.length} 张（可用下方单表模式手动导入）`
+                    : ""}
+                  。整库级校验结果如下，可在关系图中查看整体结构。
+                </p>
+                <Link href="/graph" className="text-sm text-brand-600 hover:underline">
+                  在关系图中查看 →
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {batch.perTable.map((t) => (
+                  <div key={t.target} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+                    <p className="text-xs text-slate-500">{TARGET_TYPES.find((x) => x.key === t.target)?.label}</p>
+                    <p className="truncate text-xs text-slate-400">{t.name}</p>
+                    <p className="mt-1 text-sm">
+                      <span className="font-semibold text-emerald-700">{t.valid}</span>
+                      <span className="text-slate-400"> 通过 · </span>
+                      <span className="font-semibold text-red-600">{t.errors}</span>
+                      <span className="text-slate-400"> 错误</span>
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {batch.skipped.length > 0 && (
+                <p className="text-xs text-slate-400">
+                  未识别表：{batch.skipped.map((s) => s.name).join("、")}
+                </p>
+              )}
+
+              <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-slate-700">整库级规则校验</h3>
+                <p className="mt-2 text-xs leading-5 text-slate-400">
+                  四表已全部导入，下列为跨表整体校验结果（含引用 / 覆盖类规则）。
+                </p>
+              </div>
+              <ValidationSummary report={batch.report} />
+              <RuleSummaryTable rows={batch.report.byRule} />
+              <IssueTable
+                title="问题清单（按级别 → 表 → 行号排序）"
+                issues={batch.report.issues}
+              />
+              <div className="grid gap-4 md:grid-cols-2">
+                <QualityScoreCard score={batch.quality} />
+                <RuleRecommendations recommendations={batch.recommendations} />
+              </div>
+            </div>
+          )}
+
           {/* 工作表选择 */}
           {parse.sheets.length > 1 && (
             <div className="flex flex-wrap gap-2" role="tablist" aria-label="工作表">
@@ -367,10 +537,10 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observ
             )
           )}
 
-          {/* 字段映射 */}
+          {/* 字段映射（单表模式，始终保留以兼容高级 / 自定义场景） */}
           {currentSheet && currentSheet.rows.length > 0 && (
             <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-slate-700">字段映射</h2>
+              <h2 className="text-sm font-semibold text-slate-700">字段映射（单表模式）</h2>
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {TARGET_TYPES.map((t) => (
@@ -525,7 +695,7 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observ
             </div>
           )}
 
-          {/* 校验结果 */}
+          {/* 单表校验结果 */}
           {outcome && (
             <div className="space-y-4">
               <div className="flex flex-wrap gap-3">
@@ -566,7 +736,7 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observ
             </div>
           )}
 
-          {/* 规则引擎校验结果 */}
+          {/* 单表规则引擎校验结果 */}
           {validationReport && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -580,7 +750,7 @@ const PLURAL: Record<ImportTargetType, "spaces" | "assets" | "sensors" | "observ
                 <p className="mt-2 text-xs leading-5 text-slate-400">
                   本次仅导入了「{TABLE_LABEL[target]}」单表，引擎只在该表内执行规则；
                   涉及其他表的引用 / 覆盖类规则因数据不足被自动跳过（见下方「规则维度汇总」中的「已跳过」），
-                  不会产生悬空引用误报。如需整库级校验，请使用「校验数据」页面。
+                  不会产生悬空引用误报。如需整库级校验，请使用「校验数据」页面，或使用上方「多表批量导入」。
                 </p>
               </div>
               <ValidationSummary report={validationReport} />

@@ -18,7 +18,7 @@ export function NavBar() {
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-slate-900" data-testid="nav-home">
+        <Link href="/" className="flex items-center gap-2 font-semibold text-slate-900" data-testid="nav-logo">
           <span className="flex h-6 w-6 items-center justify-center rounded bg-brand-600 text-xs font-bold text-white">
             T
           </span>
