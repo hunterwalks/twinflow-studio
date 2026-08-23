@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
 import { industrialPark } from "@/lib/data/industrialPark";
 import { messyPark, rootlessSpaces } from "@/lib/data/messyPark";
@@ -155,6 +156,7 @@ export default function ValidatePage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
+      <Breadcrumbs items={[{ href: "/validate", label: "校验" }]} />
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-brand-600">TwinFlow Studio · 质量校验</p>

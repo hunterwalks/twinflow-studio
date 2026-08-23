@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { APP_VERSION } from "@/lib/version";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 /**
  * 离线帮助页（v1.0.0）：快速开始、隐私与安全、常见问题。
@@ -8,6 +9,7 @@ import { APP_VERSION } from "@/lib/version";
 export default function HelpPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
+      <Breadcrumbs items={[{ href: "/help", label: "帮助" }]} />
       <p className="text-sm font-medium text-brand-600">TwinFlow Studio · 帮助</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">离线帮助与常见问题</h1>
       <p className="mt-3 text-sm leading-7 text-slate-500">

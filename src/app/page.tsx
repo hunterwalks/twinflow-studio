@@ -1,5 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { APP_VERSION } from "@/lib/version";
+import { useProject } from "@/lib/project/ProjectProvider";
+import { ObjectCounts } from "@/components/ObjectCounts";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 const STEPS = [
   { n: 1, title: "打开 Demo", desc: "一键载入合成数据集，立刻看到 Space / Asset / Sensor / Observation 四类对象。" },
@@ -9,10 +14,24 @@ const STEPS = [
   { n: 5, title: "导出报告", desc: "一键生成自包含 HTML / JSON 治理报告，可离线打开与归档。" },
 ];
 
+const SOURCE_LABEL: Record<string, string> = {
+  demo: "内置 Demo 数据",
+  import: "用户导入数据",
+  project: "项目文件导入",
+  empty: "尚未载入",
+};
+
 export default function HomePage() {
+  const { state, isEmpty, hydrated } = useProject();
+
+  const total =
+    state.spaces.length + state.assets.length + state.sensors.length + state.observations.length;
+
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
-      <p className="text-sm font-medium text-brand-600">TwinFlow Studio · v{APP_VERSION}</p>
+    <main className="mx-auto max-w-3xl px-6 py-10">
+      <Breadcrumbs items={[]} />
+
+      <p className="mt-4 text-sm font-medium text-brand-600">TwinFlow Studio · v{APP_VERSION}</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
         数字孪生数据建模与质量治理工作台
       </h1>
@@ -21,7 +40,82 @@ export default function HomePage() {
         建立空间与设备关系、检查数据质量并形成可追溯的治理报告。
       </p>
 
-      {/* 新手引导：5 步上手 */}
+      {/* 状态感知：已载入项目 */}
+      {hydrated && !isEmpty && (
+        <section
+          data-testid="home-loaded"
+          className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold text-slate-800">当前项目</h2>
+            <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500" data-testid="home-source">
+              {SOURCE_LABEL[state.source] ?? "本地数据"} · 共 {total} 条记录
+            </span>
+          </div>
+          <div className="mt-4">
+            <ObjectCounts
+              spaces={state.spaces.length}
+              assets={state.assets.length}
+              sensors={state.sensors.length}
+              observations={state.observations.length}
+            />
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href="/validate"
+              data-testid="home-continue-validate"
+              className="inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
+            >
+              继续校验 →
+            </Link>
+            <Link
+              href="/graph"
+              data-testid="home-continue-graph"
+              className="inline-flex items-center rounded-md border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              查看关系图 →
+            </Link>
+            <Link
+              href="/report"
+              data-testid="home-continue-report"
+              className="inline-flex items-center rounded-md border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              导出报告 →
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* 状态感知：空项目（未载入） */}
+      {hydrated && isEmpty && (
+        <section
+          data-testid="home-empty"
+          className="mt-6 rounded-lg border border-dashed border-slate-300 bg-white p-6 shadow-sm"
+        >
+          <h2 className="text-lg font-semibold text-slate-800">开始你的第一次治理</h2>
+          <p className="mt-2 text-sm text-slate-500">
+            还没有载入数据。从内置示例开始，或导入你自己的 CSV / Excel。
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href="/demo"
+              data-testid="home-open-demo"
+              className="inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
+            >
+              从 Demo 开始 →
+            </Link>
+            <Link
+              href="/import"
+              data-testid="home-open-import"
+              className="inline-flex items-center rounded-md border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              导入数据 →
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* 新手引导：5 步上手（两种模式都展示，作为能力地图） */}
       <section className="mt-8 rounded-lg border border-slate-200 bg-white p-6 shadow-sm" data-testid="home-onboarding">
         <h2 className="text-lg font-semibold text-slate-800">5 步上手</h2>
         <ol className="mt-4 space-y-3">
@@ -37,104 +131,23 @@ export default function HomePage() {
             </li>
           ))}
         </ol>
-        <Link
-          href="/demo"
-          data-testid="home-open-demo"
-          className="mt-5 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
-        >
-          从 Demo 开始 →
-        </Link>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link
+            href="/import"
+            data-testid="home-open-import-2"
+            className="inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
+          >
+            导入数据 →
+          </Link>
+          <Link
+            href="/project"
+            data-testid="home-open-project"
+            className="inline-flex items-center rounded-md border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            打开项目管理 →
+          </Link>
+        </div>
       </section>
-
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">导入你的表格数据</h2>
-        <p className="mt-2 text-sm text-slate-500">
-          选择本地 CSV / Excel 文件，预览工作表并把列映射到 Space / Asset / Sensor / Observation 模型字段，
-          导入后立即得到通过计数与逐行错误。全程在浏览器本地完成，不上传文件。
-        </p>
-        <Link
-          href="/import"
-          data-testid="home-open-import"
-          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
-        >
-          导入数据 →
-        </Link>
-      </div>
-
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">管理完整项目</h2>
-        <p className="mt-2 text-sm text-slate-500">
-          项目由 Space / Asset / Sensor / Observation 四张表组成，可整体导出为单个 JSON 文件并在任意设备恢复；
-          也兼容导入 v1 旧项目（自动迁移为四表）。导入为覆盖式，全部在浏览器本地完成。
-        </p>
-        <Link
-          href="/project"
-          data-testid="home-open-project"
-          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
-        >
-          打开项目管理 →
-        </Link>
-      </div>
-
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">校验数据质量</h2>
-        <p className="mt-2 text-sm text-slate-500">
-          对内置 Demo 或含问题样例运行 24 条确定性校验规则，得到分级（错误 / 警告 / 提示）
-          且可溯源（表 / 行号 / 记录 ID / 字段）的问题清单，每条问题附带修复建议。
-        </p>
-        <Link
-          href="/validate"
-          data-testid="home-open-validate"
-          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
-        >
-          校验数据 →
-        </Link>
-      </div>
-
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">可视化对象关系图</h2>
-        <p className="mt-2 text-sm text-slate-500">
-          以关系图查看 Space / Asset / Sensor 的层级与引用结构，孤立或悬空对象会被高亮并标注原因；
-          当前项目会自动保存在浏览器本地，关闭重开后自动恢复。
-        </p>
-        <Link
-          href="/graph"
-          data-testid="home-open-graph"
-          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
-        >
-          查看关系图 →
-        </Link>
-      </div>
-
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">导出数据治理报告</h2>
-        <p className="mt-2 text-sm text-slate-500">
-          基于当前项目数据聚合校验问题、质量评分（0–100 / 等级 A–E）与规则建议，一键导出为
-          自包含 HTML（可打印、可离线打开）或结构化 JSON（便于归档与二次处理）。全部在浏览器本地生成，不上传数据。
-        </p>
-        <Link
-          href="/report"
-          data-testid="home-open-report"
-          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
-        >
-          导出报告 →
-        </Link>
-      </div>
-
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">跨项目对比</h2>
-        <p className="mt-2 text-sm text-slate-500">
-          并排对比当前项目与内置样例（或任意两个样例）的记录规模、质量评分、问题分布与命中规则，
-          快速判断数据治理成效与差异。
-        </p>
-        <Link
-          href="/compare"
-          data-testid="home-open-compare"
-          className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
-        >
-          打开对比 →
-        </Link>
-      </div>
 
       {/* 本地优先与隐私说明 */}
       <section className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600" data-testid="home-privacy">

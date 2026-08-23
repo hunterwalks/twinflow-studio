@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useToast } from "@/components/Toast";
 import type { Column } from "@/lib/table";
 import {
   detectFormat,
@@ -114,6 +115,7 @@ export default function ImportPage() {
   const [batch, setBatch] = useState<BatchResult | null>(null);
   const applyingTemplate = useRef<MappingTemplate | null>(null);
   const { importTable } = useProject();
+  const { notify } = useToast();
 
   // v0.8.0：从 localStorage 载入已保存的映射模板
   useEffect(() => {
@@ -126,6 +128,14 @@ export default function ImportPage() {
     sensor: "sensors",
     observation: "observations",
   };
+
+  const TARGET_LABEL: Record<ImportTargetType, string> = {
+    space: "空间",
+    asset: "资产",
+    sensor: "传感器",
+    observation: "观测",
+  };
+  const targetLabel = (t: ImportTargetType) => TARGET_LABEL[t];
 
   const currentSheet = useMemo(
     () => (parse && parse.ok ? parse.sheets[selectedSheet] ?? null : null),
@@ -245,6 +255,7 @@ export default function ImportPage() {
     setQuality(qualityScore(report));
     setRecommendations(recommendRules(fullDataset));
     importTable(PLURAL[target], outcome.valid);
+    notify(`已导入 ${outcome.valid.length} 条${targetLabel(target)}记录，可在「校验」页查看结果。`, "success");
   }
 
   // v1.2.0：多表批量导入向导。按表名自动匹配四表，顺序导入并给出合并校验摘要。

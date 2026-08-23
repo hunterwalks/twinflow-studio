@@ -1,6 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
 import { join } from "path";
 
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+});
+
 // Playwright 将 .ts spec 转译为 CJS，__dirname 可用；避免使用 import.meta.url。
 const FIX = join(__dirname, "fixtures");
 

@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+});
+
 /**
  * v0.9.0 问题修复预览引擎 E2E
  * 覆盖：/validate 页为可确定性修复的问题渲染 before→after 预览，

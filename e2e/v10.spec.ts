@@ -1,6 +1,11 @@
 import { test, expect } from "@playwright/test";
 import path from "node:path";
 
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+});
+
 /**
  * v1.0.0 核心旅程 E2E
  * 覆盖陌生用户无需改代码即可稳定走完的关键链路：

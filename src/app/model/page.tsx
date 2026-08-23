@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useProject } from "@/lib/project/ProjectProvider";
 import {
   defaultModelConfig,
@@ -133,6 +134,7 @@ export default function ModelPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-8">
+      <Breadcrumbs items={[{ href: "/model", label: "模型" }]} />
       <h1 className="text-2xl font-semibold text-slate-900">模型配置</h1>
       <p className="mt-2 max-w-3xl text-sm text-slate-600">
         可配置对象模型（v1.1.0）：对象类型、字段、枚举与关系。配置作为校验引擎「配置驱动规则」的单一事实来源。

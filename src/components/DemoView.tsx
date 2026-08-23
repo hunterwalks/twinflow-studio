@@ -8,6 +8,7 @@ import {
   type DemoDataset,
 } from "@/lib/data/registry";
 import { useProject } from "@/lib/project/ProjectProvider";
+import { useToast } from "@/components/Toast";
 import {
   ASSET_COLUMNS,
   OBSERVATION_COLUMNS,
@@ -36,6 +37,7 @@ export function DemoView({ result }: { result: DemoResult }) {
     result.status === "success" ? result.data : null,
   );
   const { loadDemo, isEmpty, hydrated } = useProject();
+  const { notify } = useToast();
 
   // 仅在水合完成且项目确实为空时，自动加载当前选中数据集，避免挂载瞬间误覆盖已恢复的项目。
   useEffect(() => {
@@ -115,7 +117,10 @@ export function DemoView({ result }: { result: DemoResult }) {
         <button
           type="button"
           data-testid="demo-load"
-          onClick={() => loadDemo(ds.key)}
+          onClick={() => {
+            loadDemo(ds.key);
+            notify("已载入示例数据到当前项目。", "success");
+          }}
           className="rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
         >
           重新加载此 Demo 到项目

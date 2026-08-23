@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
 import { useProject } from "@/lib/project/ProjectProvider";
 import { makeDataset } from "@/lib/rules/dataset";
@@ -69,6 +70,7 @@ export default function ReportPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
+      <Breadcrumbs items={[{ href: "/report", label: "报告" }]} />
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-brand-600">TwinFlow Studio · 报告导出</p>

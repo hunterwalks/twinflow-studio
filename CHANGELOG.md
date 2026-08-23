@@ -2,6 +2,24 @@
 
 所有重要变更记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循 [SemVer](https://semver.org/)。
 
+## [1.3.0] - 2026-08-23
+
+> 可用性硬化三连第一版：导航与首页重构 + 开源贡献指南（源自 v1.2.0 线上点击测试与整体分析）。在不新增业务对象、不新增校验规则（保持 24 条）、不接入外部 AI 运行时的前提下，把前端收口为"进得来、知道下一步、反馈明确"。
+
+### Added
+- **分组导航栏**（`components/NavBar.tsx`）：9 个入口按"数据 / 治理 / 高级"分组，当前页高亮（`data-active`）、窄屏折叠抽屉（`nav-toggle` / `nav-mobile`），版本号常驻。
+- **面包屑**（`components/Breadcrumbs.tsx`）：`/validate` `/graph` `/report` `/project` `/model` `/compare` `/help` 子页面顶部显示"首页 › 当前页"，首页不渲染。
+- **状态感知首页**（`app/page.tsx`，改为 client 组件）：空项目态（`home-empty`）突出「从 Demo 开始 / 导入数据」；已载入态（`home-loaded`）显示数据集来源、对象计数卡与「继续校验 / 查看关系图 / 导出报告」快捷入口；依赖 `useProject` 的 `isEmpty` / `hydrated`。
+- **统一空态 / 错误态**（`components/EmptyState.tsx` / `ErrorState.tsx`）：三段式文案（发生了什么 / 为什么 / 下一步），在 `import / validate / graph / report` 复用，风格一致。
+- **全局轻提示 toast**（`components/Toast.tsx` + `ToastProvider` 接入 `layout.tsx`）：导入成功、Demo 载入、清空项目等关键动作非阻塞反馈（`data-testid="toast"`），不依赖 `window.alert`。
+- **`CONTRIBUTING.md`**：新增开源贡献指南，含"AI / GPT 辅助贡献政策"专节（允许 GPT 辅助但须附自测证据、核心引擎须人工复核、运行时禁止引入 GPT 依赖），使 GitHub Contribute 模块可显示 GPT 相关指引。
+
+### Changed
+- 版本号升至 v1.3.0；`src/lib/version.ts` 与 `package.json` 同步更新。
+
+### Quality
+- 全量单测 233 项通过；typecheck / ESLint / 生产构建复核；新增导航、首页双模式、面包屑、toast 的 E2E 定位符与回归场景（沿用 `data-testid` 稳定选择器）。
+
 ## [1.2.0] - 2026-08-23
 
 > 关系图可用性与导入效率专项优化（源自 v1.1.0 线上点击测试与整体分析）。在不破坏既有 24 条内置规则与单表导入路径的前提下，修复关系图交互缺陷、强化关系呈现、按 Space 深度展开层级布局，并新增「多表批量导入」向导。

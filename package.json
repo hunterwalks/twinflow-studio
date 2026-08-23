@@ -1,7 +1,7 @@
 {
   "name": "twinflow-studio",
-  "version": "1.2.0",
-  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v1.2.0: relationship-graph depth layout & parent→child edges, node-click detail & edge visibility, multi-sheet batch import wizard, nav testid dedup).",
+  "version": "1.3.0",
+  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v1.3.0: grouped nav with active highlight & breadcrumbs, state-aware home, unified empty/error states, global toast, CONTRIBUTING with GPT policy).",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",

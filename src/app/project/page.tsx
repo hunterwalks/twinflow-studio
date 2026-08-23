@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
 import { useProject } from "@/lib/project/ProjectProvider";
 import { serializeProject, parseProjectFile } from "@/lib/project/io";
@@ -97,6 +98,7 @@ export default function ProjectPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
+      <Breadcrumbs items={[{ href: "/project", label: "项目" }]} />
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-brand-600">TwinFlow Studio · 项目管理</p>

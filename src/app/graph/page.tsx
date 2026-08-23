@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { useToast } from "@/components/Toast";
 import Link from "next/link";
 import {
   Background,
@@ -101,6 +103,7 @@ function toRfEdge(e: PositionedEdge, hoveredId: string | null): Edge {
 
 export default function GraphPage() {
   const { state, isEmpty, loadDemo, clear } = useProject();
+  const { notify } = useToast();
   const [onlyIsolated, setOnlyIsolated] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -155,6 +158,7 @@ export default function GraphPage() {
   if (isEmpty) {
     return (
       <main className="mx-auto max-w-5xl px-6 py-12">
+        <Breadcrumbs items={[{ href: "/graph", label: "关系图" }]} />
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-brand-600">TwinFlow Studio · 关系图</p>
           <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">
@@ -190,6 +194,7 @@ export default function GraphPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
+      <Breadcrumbs items={[{ href: "/graph", label: "关系图" }]} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-brand-600">TwinFlow Studio · 关系图</p>
@@ -211,7 +216,10 @@ export default function GraphPage() {
           <button
             type="button"
             data-testid="graph-clear"
-            onClick={clear}
+            onClick={() => {
+              clear();
+              notify("已清空本地项目数据。", "info");
+            }}
             className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50"
           >
             清空项目

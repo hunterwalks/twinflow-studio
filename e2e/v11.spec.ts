@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+});
+
 test("模型配置页：可达并展示四表核心模型", async ({ page }) => {
   await page.goto("/model");
   await expect(page.getByTestId("nav-model")).toBeVisible();

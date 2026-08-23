@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
 import { useProject } from "@/lib/project/ProjectProvider";
 import { industrialPark } from "@/lib/data/industrialPark";
@@ -85,6 +86,7 @@ export default function ComparePage() {
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
+      <Breadcrumbs items={[{ href: "/compare", label: "对比" }]} />
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-brand-600">TwinFlow Studio · 跨项目对比</p>

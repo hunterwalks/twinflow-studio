@@ -19,6 +19,8 @@ const config = [
       "coverage/**",
       // 自动生成，不应被 lint：含 triple-slash 引用，会触发 @typescript-eslint 规则
       "next-env.d.ts",
+      // 一次性分析脚本（非产品代码，含 require 风格导入），不纳入质量门
+      "scripts/**",
     ],
   },
 ];

@@ -3,6 +3,11 @@ import { mkdtempSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+});
+
 const V1_PROJECT = JSON.stringify({
   version: 1,
   source: "demo",
