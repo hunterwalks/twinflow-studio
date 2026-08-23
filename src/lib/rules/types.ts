@@ -66,6 +66,13 @@ export interface RuleContext {
   idSet: Record<TableName, Set<string>>;
   /** sensor.assetId 的引用计数，键为 assetId */
   sensorCountByAsset: Map<string, number>;
+  /**
+   * 按对象类型 ID 的已存在 ID 集合（含自定义类型），用于配置驱动规则。
+   * 键覆盖四张核心表（space/asset/sensor/observation）与任意自定义类型。
+   */
+  typeIdSet: Record<string, Set<string>>;
+  /** 各对象类型是否有数据（含自定义类型）。 */
+  hasType: Record<string, boolean>;
 }
 
 /** 一条校验规则。 */

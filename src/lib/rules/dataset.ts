@@ -106,6 +106,19 @@ export function buildContext(dataset: RuleDataset): RuleContext {
     sensorCountByAsset.set(key, (sensorCountByAsset.get(key) ?? 0) + 1);
   }
 
+  const typeIdSet: Record<string, Set<string>> = {
+    space: idSet.space,
+    asset: idSet.asset,
+    sensor: idSet.sensor,
+    observation: idSet.observation,
+  };
+  const hasType: Record<string, boolean> = {
+    space: dataset.spaces.length > 0,
+    asset: dataset.assets.length > 0,
+    sensor: dataset.sensors.length > 0,
+    observation: dataset.observations.length > 0,
+  };
+
   return {
     dataset,
     hasTable: {
@@ -116,6 +129,8 @@ export function buildContext(dataset: RuleDataset): RuleContext {
     },
     idSet,
     sensorCountByAsset,
+    typeIdSet,
+    hasType,
   };
 }
 

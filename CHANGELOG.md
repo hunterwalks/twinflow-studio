@@ -2,6 +2,24 @@
 
 所有重要变更记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循 [SemVer](https://semver.org/)。
 
+## [1.1.0] - 2026-08-20
+
+> 路线图阶段 B 起点：可配置模型与规则。在不破坏既有 24 条内置规则的前提下，引入版本化模型配置与「配置驱动规则包」，使校验引擎可由模型配置驱动；新增 `/model` 配置页用于查看、编辑、导入 / 导出模型与试用规则包。
+
+### Added
+- **模型配置（`lib/config/model.ts`）**：对象类型 / 字段 / 枚举 / 关系的版本化 JSON schema（`configVersion = 1`）与 Zod 校验；`defaultModelConfig()` 与四表核心模型一致；`migrateModelConfig` / `validateModelConfig` 支持语义级错误定位。
+- **配置驱动规则（`lib/config/rules.ts`）**：`buildConfigRules(model)` 由模型配置动态生成通用规则（必填 / 枚举 / 引用完整性 / 唯一），确定性、可溯源，ID 以 `C-` 前缀。
+- **规则包（`lib/rules/packages.ts`）**：`BUILTIN_PACKAGE`（24 条）与 `CONFIG_PACKAGE`（由模型生成）可独立启用 / 关闭；`getEnabledRules` 组合所选包。关闭内置包后校验完全由模型配置驱动。
+- **`/model` 配置页**：可读视图 + JSON 编辑（实时校验）+ 配置导入 / 导出 + 规则包开关 + 「在已加载数据上试运行」；导航栏加入口。
+- **`ProjectState.modelConfig`**：模型配置随项目持久化（`persist.ts` v2 透传），数据导入 / Demo 载入时保留。
+
+### Changed
+- `RuleContext` 增加 `typeIdSet` / `hasType`，为配置驱动规则提供按类型索引（非破坏）。
+- 单测新增 `config.test.ts`（17 项）：配置校验 / 迁移 / 配置规则语义 / 规则包选择。
+
+### 非目标（本版本不做）
+- 图形化低代码平台；自定义（第 5+）对象类型的端到端校验（schema 已支持、可查看导出，校验留待后续版本）。
+
 ## [1.0.0] - 2026-08-20（候选）
 
 > 路线图阶段 A 收官：首个稳定可公开推荐版本。在 v0.9.0 治理闭环之上，补齐大表可用性与离线帮助，使陌生用户无需改代码即可稳定走完「导入 → 建模 → 校验 → 修复 → 导出 / 对比」全链路，并明确隐私与数据安全边界。全部为确定性纯函数与本地计算，无 AI / 后端依赖。

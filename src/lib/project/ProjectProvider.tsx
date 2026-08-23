@@ -16,6 +16,7 @@ import type { ProjectMetadata, ProjectState, TableKey } from "./types";
 import { EMPTY_METADATA, EMPTY_PROJECT } from "./types";
 import { clearProject, loadProject, saveProject } from "./persist";
 import { applyFix as applyFixToState, type ProposedFix } from "@/lib/fixes";
+import { defaultModelConfig, type ModelConfig } from "@/lib/config/model";
 
 interface ProjectContextValue {
   state: ProjectState;
@@ -34,6 +35,10 @@ interface ProjectContextValue {
   updateMetadata: (patch: Partial<ProjectMetadata>) => void;
   /** 应用一条确定性修复（来自修复预览引擎）。 */
   applyFix: (fix: ProposedFix) => void;
+  /** 当前生效的模型配置（未设置时回退到默认四表模型）。 */
+  modelConfig: ModelConfig;
+  /** 设置模型配置（持久化）。 */
+  setModelConfig: (cfg: ModelConfig) => void;
   clear: () => void;
 }
 
@@ -78,15 +83,17 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   const loadDemo = useCallback((key?: string) => {
     touchedRef.current = true;
     const ds = getDemoDataset(key);
-    setState({
+    setState((prev) => ({
       version: 2,
       source: "demo",
       spaces: ds.spaces,
       assets: ds.assets,
       sensors: ds.sensors,
       observations: ds.observations,
+      metadata: prev.metadata,
+      modelConfig: prev.modelConfig,
       updatedAt: new Date().toISOString(),
-    });
+    }));
   }, []);
 
   const importTable = useCallback((table: TableKey, records: LooseRecord[]) => {
@@ -99,6 +106,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       sensors: table === "sensors" ? records : prev.sensors,
       observations: table === "observations" ? records : prev.observations,
       metadata: prev.metadata,
+      modelConfig: prev.modelConfig,
       updatedAt: new Date().toISOString(),
     }));
   }, []);
@@ -113,6 +121,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       sensors: next.sensors,
       observations: next.observations,
       metadata: next.metadata,
+      modelConfig: next.modelConfig,
       updatedAt: new Date().toISOString(),
     });
   }, []);
@@ -137,6 +146,11 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     setState((prev) => applyFixToState(prev, fix));
   }, []);
 
+  const setModelConfig = useCallback((cfg: ModelConfig) => {
+    touchedRef.current = true;
+    setState((prev) => ({ ...prev, modelConfig: cfg, updatedAt: new Date().toISOString() }));
+  }, []);
+
   const isEmpty =
     state.spaces.length === 0 &&
     state.assets.length === 0 &&
@@ -144,8 +158,21 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     state.observations.length === 0;
 
   const value = useMemo<ProjectContextValue>(
-    () => ({ state, isEmpty, hydrated, storageWarning, loadDemo, importTable, importProject, updateMetadata, applyFix, clear }),
-    [state, isEmpty, hydrated, storageWarning, loadDemo, importTable, importProject, updateMetadata, applyFix, clear],
+    () => ({
+      state,
+      isEmpty,
+      hydrated,
+      storageWarning,
+      loadDemo,
+      importTable,
+      importProject,
+      updateMetadata,
+      applyFix,
+      modelConfig: state.modelConfig ?? defaultModelConfig(),
+      setModelConfig,
+      clear,
+    }),
+    [state, isEmpty, hydrated, storageWarning, loadDemo, importTable, importProject, updateMetadata, applyFix, setModelConfig, clear],
   );
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;

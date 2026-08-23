@@ -1,4 +1,5 @@
 import type { LooseRecord } from "@/lib/rules/types";
+import type { ModelConfig } from "@/lib/config/model";
 
 /** 四张表对应的键（复数，与数据数组字段一致）。 */
 export type TableKey = "spaces" | "assets" | "sensors" | "observations";
@@ -29,6 +30,8 @@ export interface ProjectState {
   observations: LooseRecord[];
   /** 项目元信息（可选；旧存档 / 旧导入文件中不存在）。 */
   metadata?: ProjectMetadata;
+  /** 模型配置（v1.1.0 起可选；用于配置驱动规则。缺失时回退到默认四表模型）。 */
+  modelConfig?: ModelConfig;
   /** 最近更新时间（ISO 字符串），空态为 ""。 */
   updatedAt: string;
 }

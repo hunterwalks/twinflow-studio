@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: "/graph", label: "关系图" },
   { href: "/report", label: "报告" },
   { href: "/compare", label: "对比" },
+  { href: "/model", label: "模型" },
   { href: "/help", label: "帮助" },
 ];
 

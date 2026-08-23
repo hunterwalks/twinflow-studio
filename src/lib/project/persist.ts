@@ -58,6 +58,7 @@ export function loadProject(): ProjectState | null {
       sensors?: unknown;
       observations?: unknown;
       metadata?: unknown;
+      modelConfig?: unknown;
       updatedAt?: unknown;
     };
     if (!parsed || typeof parsed.version !== "number") return null;
@@ -77,6 +78,7 @@ export function loadProject(): ProjectState | null {
           ? (parsed.observations as LooseRecord[])
           : [],
         metadata: isMetadata(parsed.metadata),
+        modelConfig: isModelConfigRaw(parsed.modelConfig),
         updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : "",
       };
     }
@@ -96,6 +98,14 @@ function isMetadata(v: unknown): ProjectMetadata | undefined {
     description: asStr(m.description),
     owner: asStr(m.owner),
   };
+}
+
+/** 宽松校验模型配置形状；不合法时返回 undefined（按默认模型处理）。 */
+function isModelConfigRaw(v: unknown): ProjectState["modelConfig"] {
+  if (v == null || typeof v !== "object") return undefined;
+  const m = v as Partial<ProjectState["modelConfig"]> & Record<string, unknown>;
+  if (m.configVersion !== 1 || !Array.isArray(m.objectTypes)) return undefined;
+  return m as ProjectState["modelConfig"];
 }
 
 /** 持久化项目；写入失败（隐私模式 / 配额）静默降级，不影响应用。 */
