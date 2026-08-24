@@ -26,9 +26,10 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // 清空 NODE_OPTIONS：Node 20+ 拒绝 --use-system-ca（启动直接 exit 9），与 .github/workflows 保持一致
     env: {
       PATH: process.env.PATH ?? "",
-      NODE_OPTIONS: "--use-system-ca",
+      NODE_OPTIONS: "",
     },
   },
 });
