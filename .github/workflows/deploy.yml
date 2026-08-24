@@ -37,9 +37,11 @@ jobs:
 
       - name: Build static export
         # BASE_PATH 与仓库名一致：https://<user>.github.io/twinflow-studio/
+        # 清空 NODE_OPTIONS：Node 20+ 拒绝 runner 默认注入的 --use-system-ca（启动直接 exit 9）
         env:
           EXPORT: "true"
           BASE_PATH: "/twinflow-studio"
+          NODE_OPTIONS: ""
         run: npm run build
 
       - name: Upload Pages artifact

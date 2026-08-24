@@ -35,7 +35,8 @@ jobs:
 
       - name: Production build
         env:
-          NODE_OPTIONS: "--use-system-ca"
+          # 清空 NODE_OPTIONS：Node 20+ 拒绝 runner 默认注入的 --use-system-ca（启动直接 exit 9）
+          NODE_OPTIONS: ""
         run: npm run build
 
   e2e:
@@ -59,13 +60,15 @@ jobs:
 
       - name: Run Playwright E2E
         env:
-          NODE_OPTIONS: "--use-system-ca"
+          # 清空 NODE_OPTIONS：Node 20+ 拒绝 runner 默认注入的 --use-system-ca（启动直接 exit 9）
+          NODE_OPTIONS: ""
         run: npm run test:e2e
 
       # 截图证据：在干净 Linux 环境下构建并用生产服务器截图，作为交付物附件。
       - name: Production build (for screenshots)
         env:
-          NODE_OPTIONS: "--use-system-ca"
+          # 清空 NODE_OPTIONS：Node 20+ 拒绝 runner 默认注入的 --use-system-ca（启动直接 exit 9）
+          NODE_OPTIONS: ""
         run: npm run build
 
       - name: Start production server
