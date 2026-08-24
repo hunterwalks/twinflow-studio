@@ -49,6 +49,10 @@ import {
   saveTemplate,
   type MappingTemplate,
 } from "@/lib/import/templates";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card, CardHead } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Stepper } from "@/components/ui/Stepper";
 
 const METHOD_LABEL: Record<MappingMethod, string> = {
   exact: "精确",
@@ -97,6 +101,8 @@ interface BatchResult {
   quality: QualityScore;
   recommendations: RuleRecommendation[];
 }
+
+const STEPS = [{ label: "选择文件" }, { label: "映射字段" }, { label: "校验导入" }];
 
 export default function ImportPage() {
   const [fileName, setFileName] = useState<string>("");
@@ -172,6 +178,9 @@ export default function ImportPage() {
   }, [parse]);
 
   const batchReady = parse?.ok && parse.sheets.length > 1 && sheetMatches.some((m) => m.target);
+
+  // 步骤进度：未解析=0，已解析未确认=1，已确认/批量=2
+  const stepCurrent = batch || outcome || validationReport ? 2 : parse?.ok ? 1 : 0;
 
   function onApplyTemplate(id: string) {
     const tpl = templates.find((t) => t.id === id);
@@ -321,73 +330,62 @@ export default function ImportPage() {
   }));
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-12">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-brand-600">TwinFlow Studio · 数据导入</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-            CSV / XLSX 导入与字段映射
-          </h1>
-        </div>
-        <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">
-          ← 返回首页
-        </Link>
-      </div>
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+      <PageHeader
+        eyebrow="TwinFlow Studio · 数据导入"
+        title="CSV / XLSX 导入与字段映射"
+        lead="选择本地的 CSV 或 Excel 文件，预览工作表并映射到 Space / Asset / Sensor / Observation 模型字段。解析与映射全部在浏览器本地完成，文件不会上传。"
+      />
 
-      <p className="mt-3 text-sm leading-6 text-slate-500">
-        选择本地的 CSV 或 Excel 文件，预览工作表并映射到 Space / Asset / Sensor / Observation 模型字段。
-        解析与映射全部在浏览器本地完成，文件不会上传。
-      </p>
+      <Card className="mt-6 p-5">
+        <Stepper steps={STEPS} current={stepCurrent} />
+      </Card>
 
       {/* 文件选择 */}
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <label className="block text-sm font-medium text-slate-700">选择文件</label>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
+      <Card className="mt-6 p-5">
+        <CardHead title="选择文件" />
+        <div className="mt-3 flex flex-wrap items-center gap-3 p-1">
           <input
             id="file-input"
             data-testid="import-file"
             type="file"
             accept=".csv,.xlsx,.xls"
-            className="block w-full max-w-sm text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-brand-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-700"
+            className="block w-full max-w-sm text-sm text-ink-2 file:mr-3 file:rounded-md file:border-0 file:bg-brand-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-700"
             onChange={(e) => handleFile(e.target.files?.[0])}
             disabled={busy}
           />
           {fileName && (
-            <button
-              type="button"
-              onClick={onReset}
-              className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-500 hover:bg-slate-50"
-            >
+            <Button variant="secondary" onClick={onReset}>
               重新选择
-            </button>
+            </Button>
           )}
         </div>
-        {busy && <p className="mt-3 text-sm text-slate-400">正在解析文件…</p>}
+        {busy && <p className="mt-3 text-sm text-ink-3">正在解析文件…</p>}
         {fileName && parse?.ok && (
-          <p className="mt-3 text-sm text-slate-500">
-            已加载 <span className="font-medium text-slate-700">{fileName}</span>
+          <p className="mt-3 text-sm text-ink-2">
+            已加载 <span className="font-medium text-ink-1">{fileName}</span>
             （{parse.format === "csv" ? "CSV" : "Excel"}，{parse.sheets.length} 个工作表）
           </p>
         )}
-      </div>
+      </Card>
 
       {/* 解析失败 */}
       {parse && !parse.ok && <ErrorState message={parse.error} />}
 
       {/* 已保存映射模板（始终可见，便于跨会话复用） */}
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-700">已保存的映射模板</h2>
-        <p className="mt-1 text-xs text-slate-400">
+      <Card className="mt-6 p-5">
+        <CardHead title="已保存的映射模板" meta="跨会话复用" />
+        <p className="mt-2 px-1 text-xs text-ink-3">
           选择文件后，可在此一键应用已保存的字段映射模板（仅匹配文件实际存在的列）。
         </p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2 px-1">
           <select
             value=""
             onChange={(e) => {
               if (e.target.value) onApplyTemplate(e.target.value);
             }}
             data-testid="import-template-select"
-            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700"
+            className="rounded-md border border-line bg-surface px-3 py-1.5 text-sm text-ink-1"
           >
             <option value="">— 应用已有模板 —</option>
             {templates.map((t) => (
@@ -398,114 +396,96 @@ export default function ImportPage() {
           </select>
         </div>
         {templates.length > 0 && (
-          <ul className="mt-2 space-y-1">
+          <ul className="mt-2 space-y-1 px-1">
             {templates.map((t) => (
-              <li key={t.id} className="flex items-center gap-2 text-xs text-slate-600">
+              <li key={t.id} className="flex items-center gap-2 text-xs text-ink-2">
                 <span className="flex-1 truncate">{t.name}</span>
-                <button
-                  type="button"
-                  onClick={() => onApplyTemplate(t.id)}
-                  className="text-brand-600 hover:underline"
-                >
+                <button type="button" onClick={() => onApplyTemplate(t.id)} className="text-brand-600 hover:underline">
                   应用
                 </button>
-                <button
-                  type="button"
-                  onClick={() => onDeleteTemplate(t.id)}
-                  className="text-slate-400 hover:text-red-600"
-                >
+                <button type="button" onClick={() => onDeleteTemplate(t.id)} className="text-ink-3 hover:text-err">
                   删除
                 </button>
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </Card>
 
       {/* 解析成功后的主流程 */}
       {parse && parse.ok && (
         <div className="mt-6 space-y-6">
           {/* v1.2.0：多表批量导入向导 */}
           {batchReady && (
-            <div className="rounded-lg border border-brand-200 bg-brand-50 p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-slate-800">多表批量导入（自动匹配四表）</h2>
-              <p className="mt-1 text-xs leading-5 text-slate-600">
+            <Card className="border-brand-200 bg-brand-50/60 p-5">
+              <CardHead title="多表批量导入（自动匹配四表）" />
+              <p className="mt-2 px-1 text-xs leading-5 text-ink-2">
                 检测到 {parse.sheets.length} 个工作表，已按表名自动识别：
               </p>
-              <ul className="mt-2 space-y-1 text-xs text-slate-600">
+              <ul className="mt-2 space-y-1 px-1 text-xs text-ink-2">
                 {sheetMatches.map((m) => (
                   <li key={m.name} className="flex items-center gap-2">
                     <span className="flex-1 truncate">{m.name}</span>
                     {m.target ? (
-                      <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-700">
-                        → {TARGET_TYPES.find((t) => t.key === m.target)?.label}
-                      </span>
+                      <span className="rounded bg-brand-100 px-1.5 py-0.5 text-brand-700">→ {TARGET_TYPES.find((t) => t.key === m.target)?.label}</span>
                     ) : (
-                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-500">未识别</span>
+                      <span className="rounded bg-surface-2 px-1.5 py-0.5 text-ink-3">未识别</span>
                     )}
                   </li>
                 ))}
               </ul>
-              <button
-                type="button"
-                data-testid="import-batch"
-                onClick={onBatchImport}
-                className="mt-3 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
-              >
-                一键自动匹配并导入四表
-              </button>
-            </div>
+              <div className="mt-3 px-1">
+                <Button data-testid="import-batch" onClick={onBatchImport}>
+                  一键自动匹配并导入四表
+                </Button>
+              </div>
+            </Card>
           )}
 
           {/* 批量导入结果（合并校验摘要） */}
           {batch && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-slate-400">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-ink-3">
                   已自动导入 {batch.matched} / {batch.totalSheets} 个工作表
                   {batch.skipped.length > 0
                     ? `；未识别 ${batch.skipped.length} 张（可用下方单表模式手动导入）`
                     : ""}
                   。整库级校验结果如下，可在关系图中查看整体结构。
                 </p>
-                <Link href="/graph" className="text-sm text-brand-600 hover:underline">
+                <Link href="/graph" className="text-sm font-medium text-brand-600 hover:underline">
                   在关系图中查看 →
                 </Link>
               </div>
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {batch.perTable.map((t) => (
-                  <div key={t.target} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-                    <p className="text-xs text-slate-500">{TARGET_TYPES.find((x) => x.key === t.target)?.label}</p>
-                    <p className="truncate text-xs text-slate-400">{t.name}</p>
+                  <div key={t.target} className="rounded-lg border border-line bg-surface p-3">
+                    <p className="text-xs text-ink-2">{TARGET_TYPES.find((x) => x.key === t.target)?.label}</p>
+                    <p className="truncate text-xs text-ink-3">{t.name}</p>
                     <p className="mt-1 text-sm">
-                      <span className="font-semibold text-emerald-700">{t.valid}</span>
-                      <span className="text-slate-400"> 通过 · </span>
-                      <span className="font-semibold text-red-600">{t.errors}</span>
-                      <span className="text-slate-400"> 错误</span>
+                      <span className="font-semibold text-ok">{t.valid}</span>
+                      <span className="text-ink-3"> 通过 · </span>
+                      <span className="font-semibold text-err">{t.errors}</span>
+                      <span className="text-ink-3"> 错误</span>
                     </p>
                   </div>
                 ))}
               </div>
 
               {batch.skipped.length > 0 && (
-                <p className="text-xs text-slate-400">
-                  未识别表：{batch.skipped.map((s) => s.name).join("、")}
-                </p>
+                <p className="text-xs text-ink-3">未识别表：{batch.skipped.map((s) => s.name).join("、")}</p>
               )}
 
-              <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 className="text-sm font-semibold text-slate-700">整库级规则校验</h3>
-                <p className="mt-2 text-xs leading-5 text-slate-400">
+              <Card className="p-5">
+                <CardHead title="整库级规则校验" />
+                <p className="mt-2 px-1 text-xs leading-5 text-ink-3">
                   四表已全部导入，下列为跨表整体校验结果（含引用 / 覆盖类规则）。
                 </p>
-              </div>
+              </Card>
               <ValidationSummary report={batch.report} />
               <RuleSummaryTable rows={batch.report.byRule} />
-              <IssueTable
-                title="问题清单（按级别 → 表 → 行号排序）"
-                issues={batch.report.issues}
-              />
+              <IssueTable title="问题清单（按级别 → 表 → 行号排序）" issues={batch.report.issues} />
               <div className="grid gap-4 md:grid-cols-2">
                 <QualityScoreCard score={batch.quality} />
                 <RuleRecommendations recommendations={batch.recommendations} />
@@ -526,7 +506,7 @@ export default function ImportPage() {
                   className={
                     i === selectedSheet
                       ? "rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white"
-                      : "rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                      : "rounded-md border border-line bg-surface px-4 py-2 text-sm font-medium text-ink-2 hover:bg-surface-2"
                   }
                 >
                   {s.name}
@@ -550,10 +530,10 @@ export default function ImportPage() {
 
           {/* 字段映射（单表模式，始终保留以兼容高级 / 自定义场景） */}
           {currentSheet && currentSheet.rows.length > 0 && (
-            <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-slate-700">字段映射（单表模式）</h2>
+            <Card className="p-5">
+              <CardHead title="字段映射（单表模式）" />
 
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2 px-1">
                 {TARGET_TYPES.map((t) => (
                   <button
                     key={t.key}
@@ -562,7 +542,7 @@ export default function ImportPage() {
                     className={
                       target === t.key
                         ? "rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white"
-                        : "rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                        : "rounded-md border border-line bg-surface px-4 py-2 text-sm font-medium text-ink-2 hover:bg-surface-2"
                     }
                   >
                     {t.label}
@@ -570,30 +550,22 @@ export default function ImportPage() {
                 ))}
               </div>
 
-              <p className="mt-2 text-xs text-slate-400">
+              <p className="mt-2 px-1 text-xs text-ink-3">
                 将下方源列映射到「{TARGET_TYPES.find((t) => t.key === target)?.label}」的字段。
                 v0.5.0 起按表头做置信度打分的智能映射（精确 / 归一 / 模糊），高置信自动映射，低置信需复核。
               </p>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="text-xs text-slate-500">智能映射置信度：</span>
-                <span className="rounded bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                  高 {suggestions.high}
-                </span>
-                <span className="rounded bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-                  中 {suggestions.medium}
-                </span>
-                <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
-                  低/未匹配 {suggestions.low}
-                </span>
+              <div className="mt-3 flex flex-wrap items-center gap-2 px-1">
+                <span className="text-xs text-ink-2">智能映射置信度：</span>
+                <span className="rounded bg-ok/10 px-2 py-0.5 text-xs font-medium text-ok">高 {suggestions.high}</span>
+                <span className="rounded bg-warn/10 px-2 py-0.5 text-xs font-medium text-warn">中 {suggestions.medium}</span>
+                <span className="rounded bg-surface-2 px-2 py-0.5 text-xs font-medium text-ink-3">低/未匹配 {suggestions.low}</span>
               </div>
 
               {/* 保存当前映射为模板（需已载入文件） */}
-              <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4">
-                <h3 className="text-sm font-semibold text-slate-700">保存当前映射为模板</h3>
-                <p className="mt-1 text-xs text-slate-400">
-                  可将当前字段映射保存为模板，下次导入同结构文件时一键复用。
-                </p>
+              <div className="mt-4 rounded-lg border border-line bg-surface-2/60 p-4">
+                <h3 className="text-sm font-semibold text-ink-1">保存当前映射为模板</h3>
+                <p className="mt-1 text-xs text-ink-3">可将当前字段映射保存为模板，下次导入同结构文件时一键复用。</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <input
                     type="text"
@@ -601,19 +573,14 @@ export default function ImportPage() {
                     onChange={(e) => setTemplateName(e.target.value)}
                     placeholder="模板名称（可选）"
                     data-testid="import-template-name"
-                    className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700"
+                    className="rounded-md border border-line bg-surface px-3 py-1.5 text-sm text-ink-1"
                   />
-                  <button
-                    type="button"
-                    onClick={onSaveTemplate}
-                    data-testid="import-template-save"
-                    className="rounded-md bg-brand-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-brand-700"
-                  >
+                  <Button data-testid="import-template-save" onClick={onSaveTemplate}>
                     保存当前映射为模板
-                  </button>
+                  </Button>
                 </div>
                 {lastSaved && (
-                  <p data-testid="import-template-saved" className="mt-2 text-xs text-emerald-600">
+                  <p data-testid="import-template-saved" className="mt-2 text-xs text-ok">
                     已保存模板「{lastSaved}」。
                   </p>
                 )}
@@ -622,29 +589,25 @@ export default function ImportPage() {
               <div className="mt-4 overflow-x-auto">
                 <table className="min-w-full border-collapse text-left text-sm">
                   <thead>
-                    <tr className="bg-slate-50">
-                      <th className="border-b border-slate-200 px-4 py-2 font-medium text-slate-500">
-                        目标字段
-                      </th>
-                      <th className="border-b border-slate-200 px-4 py-2 font-medium text-slate-500">
-                        映射到源列
-                      </th>
+                    <tr className="bg-surface-2">
+                      <th className="border-b border-line px-4 py-2 font-medium text-ink-2">目标字段</th>
+                      <th className="border-b border-line px-4 py-2 font-medium text-ink-2">映射到源列</th>
                     </tr>
                   </thead>
                   <tbody>
                     {TARGET_FIELDS[target].map((f) => (
-                      <tr key={f.key} className="border-b border-slate-100">
-                        <td className="px-4 py-2 text-slate-700">
+                      <tr key={f.key} className="border-b border-line/70">
+                        <td className="px-4 py-2 text-ink-1">
                           {f.label}
-                          {f.required && <span className="ml-1 text-red-500">*</span>}
-                          <span className="ml-2 text-xs text-slate-400">{f.key}</span>
+                          {f.required && <span className="ml-1 text-err">*</span>}
+                          <span className="ml-2 text-xs text-ink-3">{f.key}</span>
                         </td>
                         <td className="px-4 py-2">
                           <div className="flex items-center gap-2">
                             <select
                               value={sourceForTarget(mapping, f.key)}
                               onChange={(e) => setTargetSource(f.key, e.target.value)}
-                              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700"
+                              className="rounded-md border border-line bg-surface px-3 py-1.5 text-sm text-ink-1"
                             >
                               <option value="">— 不映射 —</option>
                               {currentSheet.headers.map((h) => (
@@ -658,31 +621,21 @@ export default function ImportPage() {
                               if (!sug) return null;
                               const selected = sourceForTarget(mapping, f.key);
                               if (sug.source == null) {
-                                return (
-                                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
-                                    未匹配
-                                  </span>
-                                );
+                                return <span className="rounded bg-surface-2 px-1.5 py-0.5 text-xs text-ink-3">未匹配</span>;
                               }
                               if (selected !== sug.source) {
-                                return (
-                                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
-                                    手动
-                                  </span>
-                                );
+                                return <span className="rounded bg-surface-2 px-1.5 py-0.5 text-xs text-ink-3">手动</span>;
                               }
                               const tone =
                                 sug.method === "exact"
-                                  ? "bg-emerald-50 text-emerald-700"
+                                  ? "bg-ok/10 text-ok"
                                   : sug.method === "normalized"
-                                    ? "bg-teal-50 text-teal-700"
-                                    : "bg-amber-50 text-amber-700";
+                                    ? "bg-info/10 text-info"
+                                    : "bg-warn/10 text-warn";
                               return (
                                 <span className={`rounded px-1.5 py-0.5 text-xs ${tone}`}>
                                   {METHOD_LABEL[sug.method]}
-                                  {sug.method !== "exact" && sug.score > 0
-                                    ? ` ${(sug.score * 100).toFixed(0)}%`
-                                    : ""}
+                                  {sug.method !== "exact" && sug.score > 0 ? ` ${(sug.score * 100).toFixed(0)}%` : ""}
                                   {sug.needsReview ? " · 需复核" : ""}
                                 </span>
                               );
@@ -695,28 +648,25 @@ export default function ImportPage() {
                 </table>
               </div>
 
-              <button
-                type="button"
-                data-testid="import-confirm"
-                onClick={onConfirm}
-                className="mt-4 inline-flex items-center rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
-              >
-                确认导入并校验
-              </button>
-            </div>
+              <div className="mt-4">
+                <Button data-testid="import-confirm" onClick={onConfirm}>
+                  确认导入并校验
+                </Button>
+              </div>
+            </Card>
           )}
 
           {/* 单表校验结果 */}
           {outcome && (
             <div className="space-y-4">
               <div className="flex flex-wrap gap-3">
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
-                  <p className="text-xs text-emerald-600">通过</p>
-                  <p className="text-xl font-semibold text-emerald-700">{outcome.valid.length}</p>
+                <div className="rounded-lg border border-ok/30 bg-ok/10 px-4 py-3">
+                  <p className="text-xs text-ok">通过</p>
+                  <p className="text-xl font-semibold text-ok">{outcome.valid.length}</p>
                 </div>
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-                  <p className="text-xs text-red-600">错误</p>
-                  <p className="text-xl font-semibold text-red-700">{outcome.errors.length}</p>
+                <div className="rounded-lg border border-err/30 bg-err/10 px-4 py-3">
+                  <p className="text-xs text-err">错误</p>
+                  <p className="text-xl font-semibold text-err">{outcome.errors.length}</p>
                 </div>
               </div>
 
@@ -729,16 +679,16 @@ export default function ImportPage() {
               )}
 
               {outcome.errors.length > 0 && (
-                <div className="rounded-lg border border-red-200 bg-white p-4 shadow-sm">
-                  <h3 className="text-sm font-semibold text-red-700">逐行错误（{outcome.errors.length}）</h3>
-                  <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto text-sm text-slate-600">
+                <Card className="border-err/30 p-4">
+                  <CardHead title={`逐行错误（${outcome.errors.length}）`} />
+                  <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto px-1 font-mono text-xs text-ink-2">
                     {outcome.errors.slice(0, 100).map((err, i) => (
-                      <li key={i} className="font-mono text-xs">
-                        <span className="text-red-600">第 {err.row} 行</span>：{err.message}
+                      <li key={i}>
+                        <span className="text-err">第 {err.row} 行</span>：{err.message}
                       </li>
                     ))}
                   </ul>
-                </div>
+                </Card>
               )}
 
               {outcome.valid.length === 0 && outcome.errors.length > 0 && (
@@ -750,20 +700,20 @@ export default function ImportPage() {
           {/* 单表规则引擎校验结果 */}
           {validationReport && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-slate-400">本次导入已写入项目，可在关系图中查看整体结构。</p>
-                <Link href="/graph" className="text-sm text-brand-600 hover:underline">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-ink-3">本次导入已写入项目，可在关系图中查看整体结构。</p>
+                <Link href="/graph" className="text-sm font-medium text-brand-600 hover:underline">
                   在关系图中查看 →
                 </Link>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 className="text-sm font-semibold text-slate-700">规则引擎校验</h3>
-                <p className="mt-2 text-xs leading-5 text-slate-400">
+              <Card className="p-5">
+                <CardHead title="规则引擎校验" />
+                <p className="mt-2 px-1 text-xs leading-5 text-ink-3">
                   本次仅导入了「{TABLE_LABEL[target]}」单表，引擎只在该表内执行规则；
                   涉及其他表的引用 / 覆盖类规则因数据不足被自动跳过（见下方「规则维度汇总」中的「已跳过」），
                   不会产生悬空引用误报。如需整库级校验，请使用「校验数据」页面，或使用上方「多表批量导入」。
                 </p>
-              </div>
+              </Card>
               <ValidationSummary report={validationReport} />
               <RuleSummaryTable rows={validationReport.byRule} />
               <IssueTable
@@ -781,6 +731,6 @@ export default function ImportPage() {
           )}
         </div>
       )}
-    </main>
+    </div>
   );
 }

@@ -2,6 +2,27 @@
 
 所有重要变更记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循 [SemVer](https://semver.org/)。
 
+## [1.4.0] - 2026-08-24
+
+> 设计系统整体焕新（v1.4.0 "Usability Hardening" 主线首版）：把 v1.3.x 的顶栏分组导航替换为"深色左栏 + 极简顶栏"外壳，并落地一套统一的设计令牌与可复用组件，使首页 / 校验 / 导入 / 报告四页视觉重心明确、信息密度一致。不新增业务对象、不新增校验规则（保持 24 条）、不改动既有数据流与修复逻辑。
+
+### Added
+- **深色左侧导航栏**（`components/ui/Sidebar.tsx`）：首页独立常驻 + 数据建模 / 质量治理 / 高级工具 三段分组，当前页实色高亮；替换原顶部 `NavBar`（已删除）。配套 `MobileNav` 在窄屏折叠为横向滚动条。
+- **极简顶栏**（`components/ui/TopBar.tsx`）：左面包屑定位当前页（首页 › 当前），右侧"本地优先"标识 + 版本 pill，可选 `actions` 槽位承载页面级操作。
+- **设计令牌**：`tailwind.config.ts` 扩展 `page / surface / surface-2 / line / line-strong / ink(1/2/3) / err / warn / info / ok` 语义色与 `card / card-sm` 阴影；`globals.css` 改用 `bg-page text-ink-1`。品牌蓝 `#1f57d6` 保持不变。
+- **可复用组件库**（`components/ui/`）：`PageHeader`（小标签 + 标题 + 一句话说明 + 操作区）、`Card` / `CardHead`、`Button` / `ButtonLink`（primary / secondary / ghost）、`InfoStrip`（5 列对齐指标带 + 类别分布次级行）、`Stepper`、`icons`（统一 stroke 图标集）、`nav`（导航数据）。
+- **校验 / 报告信息条**：`InfoStrip` 替代原先散落的「汇总卡 + 质量评分卡」网格，把质量评分 / 错误 / 警告 / 提示 / 命中规则收拢为一条对齐指标带，类别分布下沉为次级行，信息重心清晰。
+- 版本号升至 v1.4.0；`src/lib/version.ts` 与 `package.json` 同步更新。
+
+### Changed
+- **首页**（`app/page.tsx`）：套用 `PageHeader / Card / ButtonLink`，移除与顶栏重复的「← 返回首页」链接与冗余 `<main>` 嵌套；保留状态感知（loaded / empty）、上手路径、隐私说明与全部 `home-*` testid。
+- **校验工作台**（`app/validate/page.tsx`）：样本选择改为卡片化；筛选用统一 pill；问题清单保留 `IssueTable`（结构与 `issue-table / fix-apply / fix-preview` testid 不动，确保既有 E2E 契约不破）。
+- **导入向导**（`app/import/page.tsx`）：新增 `Stepper` 阶段进度；容器统一套 `Card`，按钮改用 `Button`，保留全部导入 / 映射 / 批量 / 模板逻辑与 `import-*` testid。
+- **报告页**（`app/report/page.tsx`）：`InfoStrip` + `Card` 重排，导出操作移入顶栏 `PageHeader` 操作区，保留空态 `report-empty` 与 `report-download-*` testid。
+
+### Quality
+- 保留全部既有 `data-testid` 契约（含 E2E 依赖的 `issue-table tbody tr`、各页 `*-sample / import-* / report-*` / `home-*`）。typecheck / ESLint（0 warning）/ 单测（233 项全绿）/ `next build`（13 路由全静态预渲染）复核通过。
+
 ## [1.3.1] - 2026-08-24
 
 > 导航栏观感补丁（v1.3.0 发布后用户反馈"效果差、不如预期"）。纯 UI 重构，不新增业务对象、不新增校验规则、不改动既有页面功能。

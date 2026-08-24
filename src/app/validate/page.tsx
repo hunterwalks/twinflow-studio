@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { industrialPark } from "@/lib/data/industrialPark";
 import { messyPark, rootlessSpaces } from "@/lib/data/messyPark";
@@ -10,24 +9,24 @@ import { cityInfraProblem } from "@/lib/data/cityInfraProblem";
 import { toRuleDataset } from "@/lib/rules/dataset";
 import { filterBySeverity, filterByTable, runRules } from "@/lib/rules/engine";
 import {
-  CATEGORY_LABEL,
   SEVERITY_LABEL,
   TABLE_LABEL,
   type Issue,
-  type RuleCategory,
   type RuleDataset,
   type Severity,
   type TableName,
 } from "@/lib/rules/types";
 import { IssueTable } from "@/components/IssueTable";
 import { RuleSummaryTable } from "@/components/RuleSummaryTable";
-import { ValidationSummary } from "@/components/ValidationSummary";
 import { QualityScoreCard } from "@/components/QualityScoreCard";
 import { RuleRecommendations } from "@/components/RuleRecommendations";
 import { qualityScore } from "@/lib/quality/score";
 import { recommendRules } from "@/lib/quality/recommend";
 import { applyFix as applyFixToState, proposeFix, type ProposedFix } from "@/lib/fixes";
 import type { ProjectState } from "@/lib/project/types";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card, CardHead } from "@/components/ui/Card";
+import { InfoStrip } from "@/components/ui/InfoStrip";
 
 interface SampleOption {
   key: string;
@@ -83,12 +82,6 @@ const TABLE_FILTERS: { key: TableName | "all"; label: string }[] = [
   { key: "sensor", label: TABLE_LABEL.sensor },
   { key: "observation", label: TABLE_LABEL.observation },
 ];
-
-function pill(active: boolean): string {
-  return active
-    ? "rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white"
-    : "rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50";
-}
 
 export default function ValidatePage() {
   const [sampleKey, setSampleKey] = useState<string>("messy");
@@ -155,71 +148,53 @@ export default function ValidatePage() {
     working.observations.length;
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-12">
-      <Breadcrumbs items={[{ href: "/validate", label: "校验" }]} />
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-brand-600">TwinFlow Studio · 质量校验</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-            校验规则引擎与问题溯源
-          </h1>
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <PageHeader
+        eyebrow="TwinFlow Studio · 质量校验"
+        title="校验规则引擎与问题溯源"
+        lead={`内置 ${report.ruleCount} 条确定性校验规则，覆盖完整性、唯一性、引用完整性、层级、覆盖度与规范性 6 个类别。每条问题都定位到具体的表、行号、记录 ID 与字段，并给出修复建议；规则为纯函数，同一份数据必然得到同一结果。`}
+      />
+
+      {/* 校验对象：样本选择卡片化 */}
+      <Card className="p-5">
+        <CardHead title="校验对象" meta={`${recordCount} 条记录`} />
+        <div className="grid gap-2 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          {SAMPLES.map((s) => {
+            const active = s.key === sampleKey;
+            return (
+              <button
+                key={s.key}
+                type="button"
+                data-testid={`validate-sample-${s.key}`}
+                onClick={() => setSampleKey(s.key)}
+                className={`rounded-lg border p-3 text-left transition-colors ${
+                  active
+                    ? "border-brand-600 bg-brand-50 ring-1 ring-brand-600"
+                    : "border-line bg-surface hover:border-line-strong hover:bg-surface-2"
+                }`}
+              >
+                <p className={`text-sm font-medium ${active ? "text-brand-700" : "text-ink-1"}`}>
+                  {s.label}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-ink-2">{s.note}</p>
+              </button>
+            );
+          })}
         </div>
-        <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">
-          ← 返回首页
-        </Link>
-      </div>
+      </Card>
 
-      <p className="mt-3 text-sm leading-6 text-slate-500">
-        内置 {report.ruleCount} 条确定性校验规则，覆盖完整性、唯一性、引用完整性、层级、覆盖度与规范性
-        6 个类别。每条问题都定位到具体的表、行号、记录 ID 与字段，并给出修复建议。
-        规则为纯函数，同一份数据必然得到同一份结果，不含 AI 判断、不联网。
-      </p>
-
-      {/* 数据集选择 */}
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-700">校验对象</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {SAMPLES.map((s) => (
-            <button
-              key={s.key}
-              type="button"
-              data-testid={`validate-sample-${s.key}`}
-              onClick={() => setSampleKey(s.key)}
-              className={pill(s.key === sampleKey)}
-            >
-              {s.label}
-            </button>
-          ))}
+      {/* 核心指标信息条 + 质量评分 */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-3">
+          <InfoStrip report={report} score={quality} />
         </div>
-        <p className="mt-3 text-xs text-slate-400">
-          {sample.note} 当前数据集共 {recordCount} 条记录（空间 {working.spaces.length} / 设备{" "}
-          {working.assets.length} / 测点 {working.sensors.length} / 观测{" "}
-          {working.observations.length}）。
-        </p>
-      </div>
-
-      {/* 汇总 + 质量评分 */}
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <ValidationSummary report={report} />
-        <QualityScoreCard score={quality} />
-      </div>
-      <div className="mt-3">
-        <Link href="/report" className="text-sm text-brand-600 hover:text-brand-700">
-          导出当前数据为完整报告（HTML / JSON）→
-        </Link>
-      </div>
-
-      {/* 类别分布 */}
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-700">类别分布</h2>
-        <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
-          {(Object.keys(CATEGORY_LABEL) as RuleCategory[]).map((c) => (
-            <span key={c}>
-              {CATEGORY_LABEL[c]}
-              <span className="ml-2 font-medium text-slate-800">{report.byCategory[c]}</span>
-            </span>
-          ))}
+        <div className="lg:col-span-2">
+          <QualityScoreCard score={quality} />
         </div>
+      </div>
+
+      <div className="mt-4">
+        <ButtonLinkSafe href="/report" label="导出当前数据为完整报告（HTML / JSON）" />
       </div>
 
       {/* 规则维度汇总 */}
@@ -233,29 +208,19 @@ export default function ValidatePage() {
       </div>
 
       {/* 问题清单与筛选 */}
-      <div className="mt-6 space-y-3">
-        <div className="flex flex-wrap gap-2">
+      <div className="mt-6">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-ink-2">级别</span>
           {SEVERITY_FILTERS.map((f) => (
-            <button
-              key={f.key}
-              type="button"
-              onClick={() => setSeverity(f.key)}
-              className={pill(f.key === severity)}
-            >
+            <FilterPill key={f.key} active={f.key === severity} onClick={() => setSeverity(f.key)}>
               {f.label}
-            </button>
+            </FilterPill>
           ))}
-        </div>
-        <div className="flex flex-wrap gap-2">
+          <span className="ml-2 text-sm font-medium text-ink-2">表</span>
           {TABLE_FILTERS.map((f) => (
-            <button
-              key={f.key}
-              type="button"
-              onClick={() => setTable(f.key)}
-              className={pill(f.key === table)}
-            >
+            <FilterPill key={f.key} active={f.key === table} onClick={() => setTable(f.key)}>
               {f.label}
-            </button>
+            </FilterPill>
           ))}
         </div>
 
@@ -267,11 +232,43 @@ export default function ValidatePage() {
         />
       </div>
 
-      <p className="mt-8 text-xs text-slate-400">
+      <p className="mt-8 text-xs text-ink-3">
         分级说明：错误 = 数据不可用，会导致建模失败或引用断裂；警告 = 可用但存在治理风险或规范缺陷；
         提示 = 完整度与覆盖度信息，可按项目要求决定是否处理。
         当被引用表未导入时，跨表规则会被跳过并在规则维度汇总中标注原因，以避免把整表判为悬空引用。
       </p>
-    </main>
+    </div>
+  );
+}
+
+function FilterPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+        active
+          ? "bg-brand-600 text-white shadow-sm"
+          : "border border-line bg-surface text-ink-2 hover:bg-surface-2"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ButtonLinkSafe({ href, label }: { href: string; label: string }) {
+  return (
+    <Link href={href} className="text-sm font-medium text-brand-600 hover:text-brand-700 hover:underline">
+      {label} →
+    </Link>
   );
 }
