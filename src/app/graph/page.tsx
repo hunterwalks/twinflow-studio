@@ -156,7 +156,7 @@ export default function GraphPage() {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         <PageHeader title="对象关系图" />
-        <Card data-testid="graph-empty" className="p-6">
+        <Card className="p-6">
           <EmptyState testid="graph-empty" message="当前没有可可视化的项目数据。" />
           <div className="mt-4 flex flex-wrap gap-3">
             <Button data-testid="graph-load-demo" onClick={() => loadDemo()}>

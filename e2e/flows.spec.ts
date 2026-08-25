@@ -48,7 +48,7 @@ test.describe("TwinFlow Studio 主流程 E2E", () => {
     await page.goto("/validate");
     await expect(page.getByTestId("validate-sample-messy")).toBeVisible();
     await page.getByTestId("validate-sample-messy").click();
-    await expect(page.getByTestId("validation-summary")).toBeVisible();
+    await expect(page.getByTestId("infostrip")).toBeVisible();
     await expect(page.getByTestId("quality-score")).toBeVisible();
     await expect(page.getByTestId("issue-table")).toBeVisible();
   });

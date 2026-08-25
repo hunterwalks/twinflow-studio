@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
 type Variant = "primary" | "secondary" | "ghost";
 type Size = "sm" | "md";
@@ -42,9 +42,10 @@ export function ButtonLink({
   size = "md",
   className = "",
   children,
-}: CommonProps & { href: string }) {
+  ...props
+}: CommonProps & { href: string } & AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
-    <Link href={href} className={`${BASE} ${VARIANT[variant]} ${SIZE[size]} ${className}`}>
+    <Link href={href} className={`${BASE} ${VARIANT[variant]} ${SIZE[size]} ${className}`} {...props}>
       {children}
     </Link>
   );

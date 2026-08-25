@@ -5,15 +5,17 @@ interface CardProps {
   as?: "section" | "div" | "article";
   className?: string;
   children: ReactNode;
-  /** 测试锚点。 */
+  /** 测试锚点（兼容 testid 与 data-testid 两种写法）。 */
   testid?: string;
+  "data-testid"?: string;
 }
 
 /** 通用卡片容器：圆角 + 描边 + 轻投影，作为所有内容块的视觉底座。 */
-export function Card({ as: Tag = "section", className = "", children, testid }: CardProps) {
+export function Card({ as: Tag = "section", className = "", children, testid, "data-testid": dataTestId }: CardProps) {
+  const id = testid ?? dataTestId;
   return (
     <Tag
-      data-testid={testid}
+      data-testid={id}
       className={`rounded-xl border border-line bg-surface shadow-card-sm ${className}`}
     >
       {children}
