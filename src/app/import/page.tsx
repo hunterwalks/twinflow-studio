@@ -36,7 +36,6 @@ import { runRulesInBatches } from "@/lib/rules/engine";
 import { qualityScore, type QualityScore } from "@/lib/quality/score";
 import { recommendRules, type RuleRecommendation } from "@/lib/quality/recommend";
 import {
-  TABLE_LABEL,
   type LooseRecord,
   type RuleDataset,
   type ValidationReport,
@@ -334,7 +333,6 @@ export default function ImportPage() {
       <PageHeader
         eyebrow="TwinFlow Studio · 数据导入"
         title="CSV / XLSX 导入与字段映射"
-        lead="选择本地的 CSV 或 Excel 文件，预览工作表并映射到 Space / Asset / Sensor / Observation 模型字段。解析与映射全部在浏览器本地完成，文件不会上传。"
       />
 
       <Card className="mt-6 p-5">
@@ -375,9 +373,6 @@ export default function ImportPage() {
       {/* 已保存映射模板（始终可见，便于跨会话复用） */}
       <Card className="mt-6 p-5">
         <CardHead title="已保存的映射模板" meta="跨会话复用" />
-        <p className="mt-2 px-1 text-xs text-ink-3">
-          选择文件后，可在此一键应用已保存的字段映射模板（仅匹配文件实际存在的列）。
-        </p>
         <div className="mt-3 flex flex-wrap items-center gap-2 px-1">
           <select
             value=""
@@ -419,9 +414,6 @@ export default function ImportPage() {
           {batchReady && (
             <Card className="border-brand-200 bg-brand-50/60 p-5">
               <CardHead title="多表批量导入（自动匹配四表）" />
-              <p className="mt-2 px-1 text-xs leading-5 text-ink-2">
-                检测到 {parse.sheets.length} 个工作表，已按表名自动识别：
-              </p>
               <ul className="mt-2 space-y-1 px-1 text-xs text-ink-2">
                 {sheetMatches.map((m) => (
                   <li key={m.name} className="flex items-center gap-2">
@@ -479,9 +471,6 @@ export default function ImportPage() {
 
               <Card className="p-5">
                 <CardHead title="整库级规则校验" />
-                <p className="mt-2 px-1 text-xs leading-5 text-ink-3">
-                  四表已全部导入，下列为跨表整体校验结果（含引用 / 覆盖类规则）。
-                </p>
               </Card>
               <ValidationSummary report={batch.report} />
               <RuleSummaryTable rows={batch.report.byRule} />
@@ -550,11 +539,6 @@ export default function ImportPage() {
                 ))}
               </div>
 
-              <p className="mt-2 px-1 text-xs text-ink-3">
-                将下方源列映射到「{TARGET_TYPES.find((t) => t.key === target)?.label}」的字段。
-                v0.5.0 起按表头做置信度打分的智能映射（精确 / 归一 / 模糊），高置信自动映射，低置信需复核。
-              </p>
-
               <div className="mt-3 flex flex-wrap items-center gap-2 px-1">
                 <span className="text-xs text-ink-2">智能映射置信度：</span>
                 <span className="rounded bg-ok/10 px-2 py-0.5 text-xs font-medium text-ok">高 {suggestions.high}</span>
@@ -565,7 +549,6 @@ export default function ImportPage() {
               {/* 保存当前映射为模板（需已载入文件） */}
               <div className="mt-4 rounded-lg border border-line bg-surface-2/60 p-4">
                 <h3 className="text-sm font-semibold text-ink-1">保存当前映射为模板</h3>
-                <p className="mt-1 text-xs text-ink-3">可将当前字段映射保存为模板，下次导入同结构文件时一键复用。</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <input
                     type="text"
@@ -708,11 +691,6 @@ export default function ImportPage() {
               </div>
               <Card className="p-5">
                 <CardHead title="规则引擎校验" />
-                <p className="mt-2 px-1 text-xs leading-5 text-ink-3">
-                  本次仅导入了「{TABLE_LABEL[target]}」单表，引擎只在该表内执行规则；
-                  涉及其他表的引用 / 覆盖类规则因数据不足被自动跳过（见下方「规则维度汇总」中的「已跳过」），
-                  不会产生悬空引用误报。如需整库级校验，请使用「校验数据」页面，或使用上方「多表批量导入」。
-                </p>
               </Card>
               <ValidationSummary report={validationReport} />
               <RuleSummaryTable rows={validationReport.byRule} />

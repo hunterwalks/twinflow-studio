@@ -152,7 +152,6 @@ export default function ValidatePage() {
       <PageHeader
         eyebrow="TwinFlow Studio · 质量校验"
         title="校验规则引擎与问题溯源"
-        lead={`内置 ${report.ruleCount} 条确定性校验规则，覆盖完整性、唯一性、引用完整性、层级、覆盖度与规范性 6 个类别。每条问题都定位到具体的表、行号、记录 ID 与字段，并给出修复建议；规则为纯函数，同一份数据必然得到同一结果。`}
       />
 
       {/* 校验对象：样本选择卡片化 */}
@@ -231,12 +230,6 @@ export default function ValidatePage() {
           onApplyFix={onApplyFix}
         />
       </div>
-
-      <p className="mt-8 text-xs text-ink-3">
-        分级说明：错误 = 数据不可用，会导致建模失败或引用断裂；警告 = 可用但存在治理风险或规范缺陷；
-        提示 = 完整度与覆盖度信息，可按项目要求决定是否处理。
-        当被引用表未导入时，跨表规则会被跳过并在规则维度汇总中标注原因，以避免把整表判为悬空引用。
-      </p>
     </div>
   );
 }

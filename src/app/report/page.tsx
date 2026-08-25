@@ -67,7 +67,6 @@ export default function ReportPage() {
       <PageHeader
         eyebrow="TwinFlow Studio · 报告导出"
         title="数据治理报告"
-        lead={`基于当前项目数据集（${report.meta.recordCount.total} 条记录）聚合的确定性治理报告：含校验问题清单、质量评分与规则建议。可一键导出为自包含 HTML（可打印 / 离线打开）或结构化 JSON（便于归档与二次处理）。全部在浏览器本地生成，不上传数据。`}
         actions={
           <div className="flex flex-wrap gap-2">
             <Button data-testid="report-download-json" onClick={exportJSON}>

@@ -33,7 +33,6 @@ export default function HomePage() {
       <PageHeader
         eyebrow={`TwinFlow Studio · v${APP_VERSION}`}
         title="数字孪生数据建模与质量治理"
-        lead="Local-first 工作台：从表格资产中识别业务对象、建立空间与设备关系、检查数据质量并生成可追溯的治理报告。全部在你的浏览器本地完成，不上传数据。"
       />
 
       {/* 状态感知：已载入项目 */}
@@ -112,21 +111,6 @@ export default function HomePage() {
         </div>
       </Card>
 
-      {/* 本地优先与隐私说明 */}
-      <Card data-testid="home-privacy" className="mt-6 bg-surface-2/50 p-5">
-        <h2 className="text-sm font-semibold text-ink-1">数据在本地处理</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-2">
-          <li>所有 CSV / Excel 解析、校验与报告生成都在你的浏览器内完成，不会上传到任何业务后端。</li>
-          <li>当前项目会自动保存在浏览器本地存储（localStorage），刷新或重开页面后会自动恢复。</li>
-          <li>想清空本地数据：进入「关系图」页点击「清空项目」，或在浏览器设置中清除本站数据。</li>
-        </ul>
-      </Card>
-
-      <p className="mt-8 text-xs text-ink-3">
-        当前为 v{APP_VERSION}：在 v0.7.0 之上，将项目升级为 Space / Asset / Sensor / Observation 四表模型，
-        支持项目 JSON 整体导入 / 导出（兼容 v1 旧项目自动迁移）与导入映射模板复用；
-        校验规则增至 24 条，覆盖观测引用完整性、时间戳、数值、同测点重复时间戳，以及观测量纲/单位、质量标记、时间合理性与测点覆盖度。全部为纯函数、可离线、可测试，无外部 AI 依赖。
-      </p>
     </div>
   );
 }

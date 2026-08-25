@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useProject } from "@/lib/project/ProjectProvider";
 import {
   defaultModelConfig,
@@ -11,12 +10,15 @@ import { buildConfigPackage } from "@/lib/config/rules";
 import { BUILTIN_PACKAGE, getEnabledRules } from "@/lib/rules/packages";
 import { runRules } from "@/lib/rules/engine";
 import { makeDataset } from "@/lib/rules/dataset";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card, CardHead } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 function FieldTypeBadge({ type, refType, enumRef }: { type: string; refType?: string; enumRef?: string }) {
   const hint =
     type === "ref" ? `引用→${refType ?? "?"}` : type === "enum" ? `枚举→${enumRef ?? "?"}` : type;
   return (
-    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">
+    <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[11px] font-medium text-ink-2">
       {hint}
     </span>
   );
@@ -30,7 +32,6 @@ export default function ModelPage() {
   const [applied, setApplied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // 初始与配置被外部重置时同步编辑框
   useEffect(() => {
     setText(JSON.stringify(modelConfig, null, 2));
   }, [modelConfig]);
@@ -81,9 +82,7 @@ export default function ModelPage() {
   };
 
   const exportConfig = () => {
-    const blob = new Blob([JSON.stringify(modelConfig, null, 2)], {
-      type: "application/json",
-    });
+    const blob = new Blob([JSON.stringify(modelConfig, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -92,7 +91,6 @@ export default function ModelPage() {
     URL.revokeObjectURL(url);
   };
 
-  // 规则包试运行
   const [enabled, setEnabled] = useState<{ builtin: boolean; config: boolean }>({
     builtin: true,
     config: true,
@@ -133,130 +131,107 @@ export default function ModelPage() {
   };
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-8">
-      <Breadcrumbs items={[{ href: "/model", label: "模型" }]} />
-      <h1 className="text-2xl font-semibold text-slate-900">模型配置</h1>
-      <p className="mt-2 max-w-3xl text-sm text-slate-600">
-        可配置对象模型（v1.1.0）：对象类型、字段、枚举与关系。配置作为校验引擎「配置驱动规则」的单一事实来源。
-        自定义（第 5+）对象类型可在下方查看、编辑与导出，其端到端校验将在后续版本提供。
-      </p>
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+      <PageHeader title="模型配置" />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        {/* 可读视图 */}
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-sm font-semibold text-slate-800">当前模型（{modelConfig.objectTypes.length} 个对象类型）</h2>
-          <div className="mt-3 space-y-4">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHead title={`当前模型（${modelConfig.objectTypes.length} 个对象类型）`} />
+          <div className="space-y-3 p-4">
             {modelConfig.objectTypes.map((ot) => (
-              <div key={ot.id} data-testid={`model-type-${ot.id}`} className="rounded border border-slate-100 bg-slate-50 p-3">
+              <div key={ot.id} data-testid={`model-type-${ot.id}`} className="rounded-lg border border-line bg-surface-2 p-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-slate-900">{ot.label}</span>
-                  <span className="text-xs text-slate-400">({ot.id})</span>
-                  <span className="text-xs text-slate-400">主键：{ot.keyField}</span>
+                  <span className="font-medium text-ink-1">{ot.label}</span>
+                  <span className="text-xs text-ink-4">({ot.id})</span>
+                  <span className="text-xs text-ink-4">主键：{ot.keyField}</span>
                 </div>
                 <ul className="mt-2 space-y-1 text-xs">
                   {ot.fields.map((f) => (
-                    <li key={f.key} className="flex items-center gap-2 text-slate-600">
-                      <code className="text-slate-800">{f.key}</code>
+                    <li key={f.key} className="flex items-center gap-2 text-ink-2">
+                      <code className="text-ink-1">{f.key}</code>
                       <FieldTypeBadge type={f.type} refType={f.refType} enumRef={f.enumRef} />
-                      {f.required && <span className="text-rose-500">必填</span>}
-                      {f.unique && <span className="text-amber-500">唯一</span>}
+                      {f.required && <span className="text-err">必填</span>}
+                      {f.unique && <span className="text-warn">唯一</span>}
                     </li>
                   ))}
                 </ul>
               </div>
             ))}
             {modelConfig.enums.length > 0 && (
-              <div className="rounded border border-slate-100 bg-slate-50 p-3">
-                <h3 className="text-xs font-semibold text-slate-700">枚举</h3>
-                <ul className="mt-1 space-y-1 text-xs text-slate-600">
+              <div className="rounded-lg border border-line bg-surface-2 p-3">
+                <h3 className="text-xs font-semibold text-ink-2">枚举</h3>
+                <ul className="mt-1 space-y-1 text-xs text-ink-2">
                   {modelConfig.enums.map((e) => (
                     <li key={e.id}>
-                      <code className="text-slate-800">{e.id}</code>：{e.values.join("、")}
+                      <code className="text-ink-1">{e.id}</code>：{e.values.join("、")}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
           </div>
-        </section>
+        </Card>
 
-        {/* JSON 编辑 */}
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-sm font-semibold text-slate-800">编辑模型配置（JSON）</h2>
-          <textarea
-            data-testid="model-json"
-            value={text}
-            onChange={(e) => onTextChange(e.target.value)}
-            spellCheck={false}
-            className="mt-2 h-72 w-full resize-y rounded border border-slate-200 bg-slate-50 p-2 font-mono text-xs text-slate-800"
-          />
-          {!valid && (
-            <div data-testid="model-errors" className="mt-2 rounded bg-rose-50 p-2 text-xs text-rose-700">
-              <div className="font-medium">校验未通过：</div>
-              <ul className="mt-1 list-inside list-disc">
-                {errors.slice(0, 8).map((e, i) => (
-                  <li key={i}>
-                    <code>{e.path}</code> — {e.message}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              data-testid="model-apply"
-              onClick={apply}
-              disabled={!valid}
-              className="rounded bg-brand-600 px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              应用配置
-            </button>
-            <button
-              onClick={resetDefault}
-              className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700"
-            >
-              重置为默认
-            </button>
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700"
-            >
-              导入配置
-            </button>
-            <button
-              onClick={exportConfig}
-              className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700"
-            >
-              导出配置
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) importFile(f);
-                e.target.value = "";
-              }}
+        <Card>
+          <CardHead title="编辑模型配置（JSON）" />
+          <div className="p-4">
+            <textarea
+              data-testid="model-json"
+              value={text}
+              onChange={(e) => onTextChange(e.target.value)}
+              spellCheck={false}
+              className="h-72 w-full resize-y rounded-lg border border-line bg-surface-2 p-2 font-mono text-xs text-ink-1"
             />
+            {!valid && (
+              <div data-testid="model-errors" className="mt-2 rounded-lg bg-err-bg p-2 text-xs text-err">
+                <div className="font-medium">校验未通过：</div>
+                <ul className="mt-1 list-inside list-disc">
+                  {errors.slice(0, 8).map((e, i) => (
+                    <li key={i}>
+                      <code>{e.path}</code> — {e.message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button data-testid="model-apply" onClick={apply} disabled={!valid}>
+                应用配置
+              </Button>
+              <Button variant="secondary" onClick={resetDefault}>
+                重置为默认
+              </Button>
+              <Button variant="secondary" onClick={() => fileRef.current?.click()}>
+                导入配置
+              </Button>
+              <Button variant="secondary" onClick={exportConfig}>
+                导出配置
+              </Button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) importFile(f);
+                  e.target.value = "";
+                }}
+              />
+            </div>
+            {applied && valid && (
+              <p data-testid="model-applied" className="mt-2 text-xs text-ok">
+                配置已应用并保存到本地。
+              </p>
+            )}
           </div>
-          {applied && valid && (
-            <p data-testid="model-applied" className="mt-2 text-xs text-emerald-600">
-              配置已应用并保存到本地。
-            </p>
-          )}
-        </section>
+        </Card>
       </div>
 
-      {/* 规则包与试运行 */}
-      <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-sm font-semibold text-slate-800">规则包与试运行</h2>
-        <p className="mt-1 text-xs text-slate-500">
-          关闭「内置规则包」后，校验将完全由上方模型配置驱动（通用规则：必填 / 枚举 / 引用 / 唯一）。
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-4">
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+      <Card className="mt-6">
+        <CardHead title="规则包与试运行" />
+        <div className="flex flex-wrap items-center gap-4 p-4">
+          <label className="flex items-center gap-2 text-sm text-ink-2">
             <input
               type="checkbox"
               data-testid="pkg-builtin"
@@ -265,7 +240,7 @@ export default function ModelPage() {
             />
             内置规则包（24 条）
           </label>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-ink-2">
             <input
               type="checkbox"
               data-testid="pkg-config"
@@ -274,26 +249,22 @@ export default function ModelPage() {
             />
             配置驱动规则包（{configPkg.rules.length} 条）
           </label>
-          <button
-            data-testid="model-trial"
-            onClick={runTrial}
-            className="rounded bg-brand-600 px-3 py-1.5 text-sm font-medium text-white"
-          >
+          <Button data-testid="model-trial" onClick={runTrial}>
             在已加载数据上试运行
-          </button>
+          </Button>
         </div>
         {trial && (
-          <div data-testid="model-trial-result" className="mt-3 rounded bg-slate-50 p-3 text-sm text-slate-700">
+          <div data-testid="model-trial-result" className="mx-4 mb-4 rounded-lg bg-surface-2 p-3 text-sm text-ink-2">
             <div>{trial.message}</div>
             <div className="mt-1 flex gap-4 text-xs">
-              <span className="text-rose-600">错误 {trial.error}</span>
-              <span className="text-amber-600">警告 {trial.warning}</span>
-              <span className="text-sky-600">提示 {trial.info}</span>
-              <span className="text-slate-400">共 {trial.ruleCount} 条规则</span>
+              <span className="text-err">错误 {trial.error}</span>
+              <span className="text-warn">警告 {trial.warning}</span>
+              <span className="text-info">提示 {trial.info}</span>
+              <span className="text-ink-4">共 {trial.ruleCount} 条规则</span>
             </div>
           </div>
         )}
-      </section>
-    </main>
+      </Card>
+    </div>
   );
 }

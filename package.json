@@ -1,7 +1,7 @@
 {
   "name": "twinflow-studio",
-  "version": "1.4.0",
-  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v1.4.0: design-system overhaul — dark left Sidebar + minimal TopBar shell, unified tokens, PageHeader/Card/Button/InfoStrip/Stepper components, focused validate & report InfoStrip; v1.3.1: redesigned nav groups; v1.3.0: breadcrumbs, state-aware home, unified empty/error states, global toast, CONTRIBUTING with GPT policy).",
+  "version": "1.5.0",
+  "description": "Local-first, AI-assisted digital-twin data modeling and quality governance workbench (v1.5.0: usability hardening — all auxiliary explanatory text removed from functional pages and consolidated into the Help page; full 6-page refresh on the v1.4 design system (graph/compare/model/help/project/demo); v1.4.0: design-system overhaul — dark left Sidebar + minimal TopBar shell, unified tokens, PageHeader/Card/Button/InfoStrip/Stepper components; v1.3.1: redesigned nav groups; v1.3.0: breadcrumbs, state-aware home, unified empty/error states, global toast, CONTRIBUTING with GPT policy).",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
