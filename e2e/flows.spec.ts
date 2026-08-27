@@ -1,5 +1,12 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Download, type Page } from "@playwright/test";
 import { join } from "path";
+
+async function downloadText(download: Download): Promise<string> {
+  const stream = await download.createReadStream();
+  let text = "";
+  for await (const chunk of stream) text += chunk.toString();
+  return text;
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
@@ -18,6 +25,21 @@ async function ensureDemoLoaded(page: Page) {
     if (!raw) return false;
     try {
       return (JSON.parse(raw).spaces?.length ?? 0) > 0;
+    } catch {
+      return false;
+    }
+  });
+}
+
+/** 载入含 Observation 的城市干净样例，用于验证报告四表贯通。 */
+async function ensureObservationDemoLoaded(page: Page) {
+  await page.goto("/demo");
+  await page.getByTestId("demo-select-city-clean").click();
+  await page.waitForFunction(() => {
+    const raw = localStorage.getItem("twinflow-project-v1");
+    if (!raw) return false;
+    try {
+      return (JSON.parse(raw).observations?.length ?? 0) > 0;
     } catch {
       return false;
     }
@@ -63,7 +85,7 @@ test.describe("TwinFlow Studio 主流程 E2E", () => {
 
   // 5. 报告页可生成 HTML / JSON 下载
   test("报告页可下载 JSON 与 HTML", async ({ page }) => {
-    await ensureDemoLoaded(page);
+    await ensureObservationDemoLoaded(page);
     await page.goto("/report");
     await expect(page.getByTestId("report-download-json")).toBeVisible();
     await expect(page.getByTestId("report-download-html")).toBeVisible();
@@ -73,6 +95,11 @@ test.describe("TwinFlow Studio 主流程 E2E", () => {
       page.getByTestId("report-download-json").click(),
     ]);
     expect(json.suggestedFilename()).toMatch(/\.json$/);
+    const exported = JSON.parse(await downloadText(json)) as {
+      meta: { version: string; recordCount: { observations: number } };
+    };
+    expect(exported.meta.version).toBe("1.5.1");
+    expect(exported.meta.recordCount.observations).toBeGreaterThan(0);
 
     const [html] = await Promise.all([
       page.waitForEvent("download"),

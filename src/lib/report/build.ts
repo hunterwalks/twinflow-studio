@@ -10,9 +10,10 @@ import { qualityScore } from "@/lib/quality/score";
 import { recommendRules } from "@/lib/quality/recommend";
 import type { RuleDataset } from "@/lib/rules/types";
 import type { TwinFlowReport } from "./types";
+import { APP_VERSION } from "@/lib/version";
 
 /** 报告内携带的应用版本号。 */
-export const REPORT_VERSION = "0.6.0";
+export const REPORT_VERSION = APP_VERSION;
 
 export interface BuildReportInput {
   dataset: RuleDataset;

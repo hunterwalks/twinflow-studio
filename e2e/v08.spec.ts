@@ -48,6 +48,7 @@ test.describe("v0.8.0 四表项目、导入导出与迁移", () => {
   test("项目导出 JSON 后重新导入可整体恢复", async ({ page }) => {
     await loadCityCleanDemo(page);
     await page.goto("/project");
+    await expect(page.getByTestId("count-observations")).toContainText("8");
 
     const [download] = await Promise.all([
       page.waitForEvent("download"),
@@ -102,6 +103,7 @@ test.describe("v0.8.0 四表项目、导入导出与迁移", () => {
   test("v1 旧项目自动迁移为 v2 四表", async ({ page }) => {
     await page.goto("/");
     await page.evaluate((v1) => localStorage.setItem("twinflow-project-v1", v1), V1_PROJECT);
+    await page.reload();
     await page.goto("/project");
     // 迁移后在内存中为 v2：空间计数为 1，观测表为空数组
     await expect(page.getByTestId("count-spaces")).toContainText("1");

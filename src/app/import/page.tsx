@@ -6,6 +6,7 @@ import { useToast } from "@/components/Toast";
 import type { Column } from "@/lib/table";
 import {
   detectFormat,
+  importFileSizeError,
   parseFile,
   type ParseResult,
 } from "@/lib/import/parse";
@@ -219,6 +220,12 @@ export default function ImportPage() {
         ok: false,
         error: `不支持的文件格式：${file.name}。仅支持 .csv 与 .xlsx / .xls。`,
       });
+      setBusy(false);
+      return;
+    }
+    const sizeError = importFileSizeError(file.size);
+    if (sizeError) {
+      setParse({ ok: false, error: sizeError });
       setBusy(false);
       return;
     }

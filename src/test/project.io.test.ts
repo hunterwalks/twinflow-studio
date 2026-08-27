@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { serializeProject, parseProjectFile } from "@/lib/project/io";
 import { EMPTY_PROJECT, type ProjectState } from "@/lib/project/types";
+import { defaultModelConfig } from "@/lib/config/model";
 
 function makeSample(): ProjectState {
   return {
@@ -14,6 +15,7 @@ function makeSample(): ProjectState {
     observations: [
       { id: "OB-1", sensorId: "SE-1", timestamp: "2026-01-01T00:00:00Z", value: "1.2" },
     ],
+    modelConfig: defaultModelConfig(),
     updatedAt: "2026-08-16T00:00:00.000Z",
   };
 }
@@ -29,6 +31,7 @@ describe("项目 JSON 导入/导出（v0.8.0）", () => {
     expect(state.assets).toEqual(sample.assets);
     expect(state.sensors).toEqual(sample.sensors);
     expect(state.observations).toEqual(sample.observations);
+    expect(state.modelConfig).toEqual(sample.modelConfig);
     expect(state.updatedAt).toBe(sample.updatedAt);
   });
 

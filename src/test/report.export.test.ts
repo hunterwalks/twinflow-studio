@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { buildReport } from "@/lib/report/build";
 import { toJSON, toHTML } from "@/lib/report/exporters";
 import { makeDataset } from "@/lib/rules/dataset";
+import { APP_VERSION } from "@/lib/version";
 
 const SAME_TIME = "2026-08-14T00:00:00.000Z";
 
@@ -15,7 +16,7 @@ describe("toJSON", () => {
   it("往返：解析后结构与分值一致", () => {
     const rep = buildReport({ dataset: FULL, generatedAt: SAME_TIME });
     const back = JSON.parse(toJSON(rep)) as typeof rep;
-    expect(back.meta.version).toBe("0.6.0");
+    expect(back.meta.version).toBe(APP_VERSION);
     expect(back.quality.score).toBe(rep.quality.score);
     expect(back.validation.totals.all).toBe(rep.validation.totals.all);
     expect(back.recommendations.length).toBe(rep.recommendations.length);

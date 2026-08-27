@@ -2,6 +2,7 @@ import type { LooseRecord } from "@/lib/rules/types";
 import type { ProjectMetadata, ProjectState, ProjectSource } from "./types";
 import { migrateProjectV1ToV2 } from "./persist";
 import { APP_VERSION } from "@/lib/version";
+import { migrateModelConfig } from "@/lib/config/model";
 
 /**
  * 项目 JSON 文件的导入 / 导出（v0.8.0）
@@ -100,6 +101,14 @@ export function parseProjectFile(content: string): ParseProjectResult {
     if (assets === null) warnings.push("assets 字段缺失或非数组，已按空表处理。");
     if (sensors === null) warnings.push("sensors 字段缺失或非数组，已按空表处理。");
     if (observations === null) warnings.push("observations 字段缺失或非数组，已按空表处理。");
+    let modelConfig: ProjectState["modelConfig"];
+    if (candidate.modelConfig != null) {
+      try {
+        modelConfig = migrateModelConfig(candidate.modelConfig);
+      } catch {
+        warnings.push("modelConfig 字段格式不合法，已回退为默认四表模型。");
+      }
+    }
     const state: ProjectState = {
       version: 2,
       source,
@@ -108,6 +117,7 @@ export function parseProjectFile(content: string): ParseProjectResult {
       sensors: sensors ?? [],
       observations: observations ?? [],
       metadata: isMetadata(candidate.metadata),
+      modelConfig,
       updatedAt:
         typeof candidate.updatedAt === "string"
           ? candidate.updatedAt

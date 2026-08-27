@@ -4,14 +4,12 @@
 # 要点:
 #   1. 构建前把旧 .next 改名让位，避免 next build 清理 .next 被安全删除守卫拦截；
 #   2. 全部输出重定向到 build_log.txt，即使 shell 被异常终止日志仍在；
-#   3. 覆盖 NODE_OPTIONS：去掉 WorkBuddy 全局注入的 genie-safe-delete shim
-#      （其回收站进程超时会导致 next build 结尾误报失败），保留 --use-system-ca；
+#   3. 清空外部 NODE_OPTIONS，避免机器级选项影响 Next.js 子进程；
 #   4. next.config 的 experimental.cpus=1 限制 worker 数，规避 Windows 下
 #      多 worker 并发派生的偶发 STATUS_DLL_INIT_FAILED (0xC0000142)。
 set -u
 cd "$(dirname "$0")/.." || exit 1
-export PATH="/c/Users/zzzz/.workbuddy/binaries/node/versions/22.22.2:$PATH"
-export NODE_OPTIONS="--use-system-ca"
+export NODE_OPTIONS=""
 
 LABEL="${1:-manual}"
 if [ -d .next ]; then

@@ -7,6 +7,15 @@
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 
+/** 浏览器内解析文件的上限，避免大文件耗尽内存或长时间阻塞主线程。 */
+export const MAX_IMPORT_FILE_BYTES = 20 * 1024 * 1024;
+
+/** 超过文件上限时返回用户可读错误，否则返回 null。 */
+export function importFileSizeError(size: number): string | null {
+  if (size <= MAX_IMPORT_FILE_BYTES) return null;
+  return "文件超过 20 MiB 上限。请拆分工作簿或精简数据后重试。";
+}
+
 export interface ParsedSheet {
   /** 工作表名（CSV 固定为 "CSV"） */
   name: string;

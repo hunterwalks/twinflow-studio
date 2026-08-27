@@ -1,11 +1,12 @@
-// TwinFlow Studio v0.7.0 — 截图证据采集脚本（独立运行，不计入 E2E 主流程）
+// TwinFlow Studio v1.5.1 — 截图证据采集脚本（独立运行，不计入 E2E 主流程）
 //
 // 用法：
 //   1) 先启动 dev 服务：  npm run dev   （监听 http://localhost:3000）
 //   2) 再运行本脚本：      node scripts/capture-screenshots.mjs
 //
-// 脚本会按 Scope 主流程逐一导航到关键页面并截图，保存到
-// ../../05_Output/TASK_20260816_006/screenshots/ 下，作为质量门与发布的交付证据。
+// 脚本按主流程逐一导航到关键页面并截图，保存到仓库 ./screenshots/ 下，
+// 作为质量门与发布的交付证据。v1.5.1 在原有 home / demo / validate / graph /
+// report / import 基础上补充了 model（模型）与 compare（对比）两页。
 //
 // 注意：本脚本仅用 data-testid 稳定定位，与 flows.spec.ts 的导航逻辑一致。
 
@@ -51,7 +52,7 @@ const run = async () => {
 
   console.log(`\n[TwinFlow screenshot] base=${BASE} out=${OUT}\n`);
 
-  // 0) 首页（含 5 步引导 + 隐私说明）
+  // 0) 首页（含上手路径与隐私说明）
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await shot(page, "01-home", "home-onboarding");
 
@@ -81,7 +82,15 @@ const run = async () => {
   await page.goto("/report", { waitUntil: "domcontentloaded" });
   await shot(page, "06-report", "report-download-json");
 
-  // 6) 导入：加载 CSV → 预览
+  // 6) 模型页（四表模型与配置驱动规则包）
+  await page.goto("/model", { waitUntil: "domcontentloaded" });
+  await shot(page, "model", "model-json");
+
+  // 7) 跨项目对比页（城市基础设施干净 vs 含问题，默认即对比态）
+  await page.goto("/compare", { waitUntil: "domcontentloaded" });
+  await shot(page, "compare", "compare-table");
+
+  // 8) 导入：加载 CSV → 预览
   await page.goto("/import", { waitUntil: "domcontentloaded" });
   await page
     .getByTestId("import-file")
@@ -92,17 +101,17 @@ const run = async () => {
   shots.push("07-import-loaded.png");
   console.log("  ✓ 07-import-loaded.png");
 
-  // 7) 导入：确认映射 → 校验结果
+  // 9) 导入：确认映射 → 校验结果
   await page.getByTestId("import-confirm").click();
   await shot(page, "08-import-validated", "validation-summary");
 
-  // 8) 错误文件提示
+  // 10) 错误文件提示
   await page.getByTestId("import-file").setInputFiles(
     join(__dirname, "../e2e/fixtures/bad.txt"),
   );
   await shot(page, "09-import-error", "error-state");
 
-  // 9) 空文件（仅表头）提示（空文件按「错误提示」处理，展示 error-state）
+  // 11) 空文件（仅表头）提示（空文件按「错误提示」处理，展示 error-state）
   await page.getByTestId("import-file").setInputFiles(
     join(__dirname, "../e2e/fixtures/empty.csv"),
   );

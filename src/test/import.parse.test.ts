@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import * as XLSX from "xlsx";
 import {
   detectFormat,
+  importFileSizeError,
+  MAX_IMPORT_FILE_BYTES,
   parseCsvText,
   parseFile,
   parseXlsxBuffer,
@@ -38,6 +40,16 @@ describe("detectFormat", () => {
   it("未知格式返回 unknown", () => {
     expect(detectFormat("a.txt")).toBe("unknown");
     expect(detectFormat("a")).toBe("unknown");
+  });
+});
+
+describe("importFileSizeError", () => {
+  it("允许不超过 20 MiB 的文件", () => {
+    expect(importFileSizeError(MAX_IMPORT_FILE_BYTES)).toBeNull();
+  });
+
+  it("拒绝超过 20 MiB 的文件并给出明确提示", () => {
+    expect(importFileSizeError(MAX_IMPORT_FILE_BYTES + 1)).toMatch(/20 MiB/);
   });
 });
 

@@ -25,8 +25,14 @@ export default function ReportPage() {
   const { state, isEmpty, loadDemo } = useProject();
 
   const dataset = useMemo(
-    () => makeDataset({ spaces: state.spaces, assets: state.assets, sensors: state.sensors }),
-    [state.spaces, state.assets, state.sensors],
+    () =>
+      makeDataset({
+        spaces: state.spaces,
+        assets: state.assets,
+        sensors: state.sensors,
+        observations: state.observations,
+      }),
+    [state.spaces, state.assets, state.sensors, state.observations],
   );
   const report = useMemo(
     () => buildReport({ dataset, source: SOURCE_LABEL[state.source] ?? state.source }),

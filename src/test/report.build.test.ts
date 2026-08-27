@@ -2,13 +2,14 @@ import { describe, it, expect } from "vitest";
 import { buildReport } from "@/lib/report/build";
 import { makeDataset, toRuleDataset } from "@/lib/rules/dataset";
 import { industrialPark } from "@/lib/data/industrialPark";
+import { APP_VERSION } from "@/lib/version";
 
 const SAME_TIME = "2026-08-14T00:00:00.000Z";
 
 describe("buildReport", () => {
   it("空数据集：质量满分 A、无问题、无建议", () => {
     const r = buildReport({ dataset: makeDataset({}), source: "测试", generatedAt: SAME_TIME });
-    expect(r.meta.version).toBe("0.6.0");
+    expect(r.meta.version).toBe(APP_VERSION);
     expect(r.meta.source).toBe("测试");
     expect(r.meta.recordCount.total).toBe(0);
     expect(r.quality.score).toBe(100);
@@ -41,8 +42,9 @@ describe("buildReport", () => {
       spaces: [{ id: "SP-1", name: "a", type: "园区", parentId: "", description: "" }],
       assets: [{ id: "AS-1", name: "b", type: "设备", spaceId: "SP-1", description: "" }],
       sensors: [{ id: "SE-1", name: "c", assetId: "AS-1", quantity: "温度", unit: "℃", description: "" }],
+      observations: [{ id: "OB-1", sensorId: "SE-1", timestamp: "2026-01-01T00:00:00Z", value: "1", quantity: "温度", unit: "℃", quality: "good" }],
     });
     const r = buildReport({ dataset: ds, generatedAt: SAME_TIME });
-    expect(r.meta.recordCount).toEqual({ spaces: 1, assets: 1, sensors: 1, observations: 0, total: 3 });
+    expect(r.meta.recordCount).toEqual({ spaces: 1, assets: 1, sensors: 1, observations: 1, total: 4 });
   });
 });
