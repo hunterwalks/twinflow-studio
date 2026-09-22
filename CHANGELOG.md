@@ -2,6 +2,20 @@
 
 所有重要变更记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循 [SemVer](https://semver.org/)。
 
+## [Unreleased]
+
+> 文档与仓库结构整理：README 拆分为中英双版本、演示截图更新到当前版本、社区健康文件收敛到 `.github/`。不改动任何运行时代码。
+
+### Changed
+- `README.md` 回归纯中文并作为默认展示页；新增完整英文对等版本 `README.en.md`。两份文档顶部各有语言切换入口，取代原先「中文正文中夹一段英文摘要」的混排结构（原结构会让中文读者先划过英文、英文读者读到一半撞上中文，两边都不完整）。
+- 新增「适合谁用」角色表（产品经理 / 方案责任人 / 开发者），把原英文摘要里的定位信息转为中文读者可直接使用的入口。
+- 12 张演示截图全部按 v1.5.3 用 `scripts/capture-screenshots.mjs` 重新生成。此前截图停留在 v1.5.1（提交 `415fe48`，2026-08-27），页面上三处版本号与报告生成时间均已过期；导入页截图还保留着 v1.5.2 已修复的英文「Choose File」按钮。新截图同时修正了 README 中「版本号唯一来源、避免漂移」与截图版本不一致的问题。
+- `CONTRIBUTING.md`、`SECURITY.md`、`CODE_OF_CONDUCT.md` 迁移至 `.github/`（GitHub 官方支持位置），根目录文件数 18 → 15。三者仍会被 GitHub 正常识别并在仓库 About 侧栏显示 Security policy / Code of conduct 入口。
+- `scripts/capture-screenshots.mjs` 头部注释去除硬编码版本号，改为不随版本漂移的说明。
+
+### Fixed
+- 修正 README 目录树与链接：`CONTRIBUTING.md` / `SECURITY.md` / `CODE_OF_CONDUCT.md` 指向 `.github/` 新位置，并补全 `README.en.md`、`.github/` 目录说明。
+
 ## [1.5.3] - 2026-09-22
 
 > 开源复审与仓库治理加固：修复版本号漂移导致的测试门失败与 npm 10 锁文件不同步，补齐英文说明与社区健康文件，统一公开元数据。不新增业务对象或校验规则，不改动运行时代码。

@@ -1,3 +1,5 @@
+[English](./README.en.md) | **简体中文**
+
 # TwinFlow Studio
 
 [![CI](https://github.com/hunterwalks/twinflow-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/hunterwalks/twinflow-studio/actions/workflows/ci.yml)
@@ -12,20 +14,13 @@ TwinFlow Studio 面向数字孪生项目早期阶段，在浏览器本地完成 
 
 **当前版本：v1.5.3**（版本号唯一来源为 `package.json`；`src/lib/version.ts`、页脚与报告元信息同步维护，避免漂移）
 
-### In English
+## 适合谁用
 
-TwinFlow Studio is a **local-first, MIT-licensed** workbench for digital-twin data modeling and quality governance. Everything runs in the browser: no backend, no API key, no data upload.
-
-- **Four-object model** — Space / Asset / Sensor / Observation (site → equipment → point → measurement).
-- **CSV / XLSX import** — sheet selection, automatic field mapping with confidence hints.
-- **24 deterministic rules** — completeness, uniqueness, references, hierarchy, coverage, convention. Every issue traces to a specific table / row / field.
-- **Explainable quality score** — 0–100 with A–E grade and per-dimension deductions.
-- **Relationship graph, guided fixes, self-contained HTML / JSON governance report, cross-project comparison.**
-- **Quality gates** — 235 unit tests, 25 Playwright end-to-end tests, plus `typecheck` / `lint` / production `build` in CI.
-
-Try it in about 30 seconds: <https://hunterwalks.github.io/twinflow-studio/>
-
-> Maturity note: an early-stage project maintained by a single maintainer. Adoption is still limited, so the strongest signals today are the deterministic engine, the test suite, CI, and the release history.
+| 角色 | 典型问题 | 在本工具里做什么 |
+|---|---|---|
+| 产品经理 | 这份数据能不能直接进项目？ | 导入表格 → 看质量评分与问题分级 → 判断是否需要先治理 |
+| 方案责任人 | 怎么形成可汇报、可交付的治理结论？ | 校验 → 关系图复核 → 导出 HTML / JSON 报告 |
+| 开发者 | 想本地跑起来或二次开发？ | `npm ci && npm run dev`，或读 [`CONTRIBUTING`](./.github/CONTRIBUTING.md) |
 
 ## 核心能力
 
@@ -84,7 +79,7 @@ npm run typecheck && npm run lint && npm run test && npm run build && npm run te
 
 ## 演示
 
-以下截图基于内置合成数据在本地运行生成；数据不会离开浏览器。
+以下截图由 `scripts/capture-screenshots.mjs` 在本地运行生成（内置合成数据；数据不会离开浏览器）。
 
 ![首页](screenshots/01-home.png)
 
@@ -102,6 +97,13 @@ npm run typecheck && npm run lint && npm run test && npm run build && npm run te
 
 ```
 twinflow-studio/
+├── .github/
+│   ├── workflows/        # CI 与 GitHub Pages 部署
+│   ├── ISSUE_TEMPLATE/   # Issue 表单
+│   ├── CONTRIBUTING.md   # 贡献指南（含 AI 辅助贡献政策）
+│   ├── SECURITY.md       # 安全策略与漏洞上报方式
+│   ├── CODE_OF_CONDUCT.md
+│   └── pull_request_template.md
 ├── src/
 │   ├── app/              # Next.js App Router
 │   ├── components/       # UI 组件
@@ -110,9 +112,9 @@ twinflow-studio/
 ├── e2e/                  # Playwright 端到端测试
 ├── scripts/              # 构建/截图辅助脚本
 ├── screenshots/          # README 演示截图
+├── README.md             # 中文说明（默认）
+├── README.en.md          # English
 ├── CHANGELOG.md          # 完整版本历史
-├── CONTRIBUTING.md       # 贡献指南
-├── SECURITY.md           # 安全策略与漏洞上报方式
 ├── PRIVACY.md            # 隐私说明（local-first 边界）
 ├── ROADMAP.md            # 路线图
 └── LICENSE               # MIT
@@ -124,10 +126,11 @@ twinflow-studio/
 - 核心引擎为确定性纯函数，无需配置任何 API Key 即可完整使用。
 - 当前数据集自动写入浏览器 `localStorage`（键 `twinflow-project-v1`），刷新或重开后自动恢复。可在「关系图」页点击「清空项目」，或清除浏览器站点数据。
 - localStorage 不可用时顶部会出现提示，应用仍可运行，但刷新后不会恢复。
+- 详见 [PRIVACY.md](./PRIVACY.md) 与 [安全策略](./.github/SECURITY.md)。
 
 ## 贡献
 
-欢迎提交 Issue、Pull Request 或参与讨论。开发流程、AI/GPT 辅助政策与质量门详见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+欢迎提交 Issue、Pull Request 或参与讨论。开发流程、AI/GPT 辅助政策与质量门详见 [CONTRIBUTING.md](./.github/CONTRIBUTING.md)；参与前请阅读[行为准则](./.github/CODE_OF_CONDUCT.md)。安全漏洞请按[安全策略](./.github/SECURITY.md)私密上报，不要开公开 Issue。
 
 ## 版本历史
 

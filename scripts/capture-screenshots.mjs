@@ -1,12 +1,15 @@
-// TwinFlow Studio v1.5.1 — 截图证据采集脚本（独立运行，不计入 E2E 主流程）
+// TwinFlow Studio — 截图证据采集脚本（独立运行，不计入 E2E 主流程）
 //
 // 用法：
 //   1) 先启动 dev 服务：  npm run dev   （监听 http://localhost:3000）
 //   2) 再运行本脚本：      node scripts/capture-screenshots.mjs
 //
 // 脚本按主流程逐一导航到关键页面并截图，保存到仓库 ./screenshots/ 下，
-// 作为质量门与发布的交付证据。v1.5.1 在原有 home / demo / validate / graph /
-// report / import 基础上补充了 model（模型）与 compare（对比）两页。
+// 作为质量门与发布的交付证据，覆盖 home / demo / validate / graph / report /
+// import / model（模型）/ compare（对比）八类页面，共 12 张。
+//
+// 发版前应重新运行本脚本并提交截图，否则 README 中的演示图会与当前版本不一致
+// （页面上会显示旧版本号）。截图不含硬编码版本，版本号来自应用运行时。
 //
 // 注意：本脚本仅用 data-testid 稳定定位，与 flows.spec.ts 的导航逻辑一致。
 
