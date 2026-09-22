@@ -2,6 +2,19 @@
 
 所有重要变更记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循 [SemVer](https://semver.org/)。
 
+## [1.5.2] - 2026-09-22
+
+> 开源复审打磨（v1.5.1 之后）：修复无障碍与本地化细节、补全空态引导，并修复发布包的可解压性。不新增业务对象或校验规则。
+
+### Fixed
+- 左侧品牌链接增加 `aria-label`（如「TwinFlow Studio v1.5.2 首页」），修正屏幕阅读器将 logo 字符与标题、版本号粘连读作「TTwinFlow Studiov1.5.1」的问题。
+- 导入页与项目页的文件输入改为中文按钮（「选择文件」「选择项目文件」），覆盖浏览器默认英文「Choose File」文案；保留 `import-file` / `project-import-file` testid，E2E 契约不变。
+- 项目页「跨表检索」区在空查询时补充引导说明，提示将跨四表检索命中的记录。
+- 重新生成发布用静态包 `twinflow-studio-v1.5.2-web.zip`，修复此前 v1.5.1 包缺少 ZIP 结束签名、无法解压的问题。
+
+### Changed
+- 版本号升至 v1.5.2；`src/lib/version.ts` 与 `package.json` 同步更新。
+
 ## [1.5.1] - 2026-08-27
 
 > OpenAI Codex for Open Source 申请前质量修复：收敛报告与项目文件的数据一致性、安全边界、自动化稳定性和公开仓库卫生，不新增业务对象或规则。

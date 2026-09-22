@@ -350,15 +350,22 @@ export default function ImportPage() {
       <Card className="mt-6 p-5">
         <CardHead title="选择文件" />
         <div className="mt-3 flex flex-wrap items-center gap-3 p-1">
-          <input
-            id="file-input"
-            data-testid="import-file"
-            type="file"
-            accept=".csv,.xlsx,.xls"
-            className="block w-full max-w-sm text-sm text-ink-2 file:mr-3 file:rounded-md file:border-0 file:bg-brand-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-700"
-            onChange={(e) => handleFile(e.target.files?.[0])}
-            disabled={busy}
-          />
+          {/* 透明 overlay 文件输入 + 中文按钮：保留 import-file testid 供 E2E，
+              同时避免浏览器默认英文「Choose File」文案。 */}
+          <div className="relative inline-flex">
+            <input
+              id="file-input"
+              data-testid="import-file"
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              className="peer absolute inset-0 z-10 cursor-pointer opacity-0"
+              onChange={(e) => handleFile(e.target.files?.[0])}
+              disabled={busy}
+            />
+            <span className="pointer-events-none inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white">
+              选择文件
+            </span>
+          </div>
           {fileName && (
             <Button variant="secondary" onClick={onReset}>
               重新选择

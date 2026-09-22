@@ -42,6 +42,7 @@ export function Sidebar() {
       <Link
         href="/"
         data-testid="nav-logo"
+        aria-label={`TwinFlow Studio v${APP_VERSION} 首页`}
         className="flex items-center gap-2.5 px-5 py-4 text-white hover:opacity-90"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-base font-bold">

@@ -165,6 +165,9 @@ export default function ProjectPage() {
             placeholder="输入 ID 或名称片段，例如：OB-10 / 温度"
             className="w-full max-w-md rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink-1"
           />
+          <p className="mt-2 text-xs text-ink-3">
+            输入关键词后，将跨「空间 / 资产 / 测点 / 观测」四表检索命中的记录。
+          </p>
           {query.trim() !== "" && (
             <div data-testid="project-search-results" className="mt-4">
               {results.length === 0 ? (
@@ -200,14 +203,21 @@ export default function ProjectPage() {
       <Card className="mt-6">
         <CardHead title="导入项目 JSON" />
         <div className="p-4">
-          <input
-            data-testid="project-import-file"
-            type="file"
-            accept=".json,application/json"
-            className="block w-full max-w-sm text-sm text-ink-2 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-700"
-            onChange={(e) => onImportFile(e.target.files?.[0])}
-            disabled={busy}
-          />
+          {/* 透明 overlay 文件输入 + 中文按钮：保留 project-import-file testid 供 E2E，
+              同时避免浏览器默认英文「Choose File」文案。 */}
+          <div className="relative inline-flex">
+            <input
+              data-testid="project-import-file"
+              type="file"
+              accept=".json,application/json"
+              className="peer absolute inset-0 z-10 cursor-pointer opacity-0"
+              onChange={(e) => onImportFile(e.target.files?.[0])}
+              disabled={busy}
+            />
+            <span className="pointer-events-none inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white">
+              选择项目文件
+            </span>
+          </div>
           {busy && <p className="mt-3 text-sm text-ink-3">正在导入项目…</p>}
           {error && (
             <p data-testid="project-import-error" className="mt-3 text-sm text-err">
