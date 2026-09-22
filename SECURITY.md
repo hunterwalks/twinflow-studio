@@ -8,7 +8,7 @@ This project is local-first and browser-only: there is no backend, no account sy
 
 | 版本 | 是否接受安全修复 |
 |---|---|
-| 最新 Release（如 `v1.5.2`） | ✅ |
+| 最新 Release（如 `v1.5.3`） | ✅ |
 | `main` 分支 | ✅ |
 | 更早的 Release | ❌ 建议先升级到最新版 |
 

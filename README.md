@@ -10,7 +10,7 @@
 
 TwinFlow Studio 面向数字孪生项目早期阶段，在浏览器本地完成 Excel / CSV 导入、字段映射、四表建模、校验、关系图、修复、报告导出与跨项目对比。无需后端，不依赖 API Key，刷新或重开后自动恢复。
 
-**当前版本：v1.5.2**（版本号唯一来源为 `package.json`；`src/lib/version.ts`、页脚与报告元信息同步维护，避免漂移）
+**当前版本：v1.5.3**（版本号唯一来源为 `package.json`；`src/lib/version.ts`、页脚与报告元信息同步维护，避免漂移）
 
 ### In English
 
@@ -51,7 +51,7 @@ Try it in about 30 seconds: <https://hunterwalks.github.io/twinflow-studio/>
 
 ### 2. 免安装离线包（无需 Node.js）
 
-在 [Releases](https://github.com/hunterwalks/twinflow-studio/releases/latest) 下载 web 静态包（文件名形如 `twinflow-studio-v1.5.2-web.zip`），解压后用任意静态服务器打开即可：全程不联网、不上传数据。
+在 [Releases](https://github.com/hunterwalks/twinflow-studio/releases/latest) 下载 web 静态包（文件名形如 `twinflow-studio-v1.5.3-web.zip`），解压后用任意静态服务器打开即可：全程不联网、不上传数据。
 
 ### 3. 源码运行（二次开发）
 

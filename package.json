@@ -1,6 +1,6 @@
 {
   "name": "twinflow-studio",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Local-first digital-twin data modeling and quality governance workbench for CSV and Excel.",
   "license": "MIT",
   "author": "hunterwalks",

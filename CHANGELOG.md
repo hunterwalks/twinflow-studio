@@ -2,9 +2,9 @@
 
 所有重要变更记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循 [SemVer](https://semver.org/)。
 
-## [Unreleased]
+## [1.5.3] - 2026-09-22
 
-> 开源复审与仓库治理加固：修复版本号漂移导致的测试门失败，补齐英文说明与社区健康文件，统一公开元数据。不新增业务对象或校验规则。
+> 开源复审与仓库治理加固：修复版本号漂移导致的测试门失败与 npm 10 锁文件不同步，补齐英文说明与社区健康文件，统一公开元数据。不新增业务对象或校验规则，不改动运行时代码。
 
 ### Fixed
 - 修复 v1.5.2 起 E2E 版本断言失败：`e2e/flows.spec.ts` 不再硬编码版本号，改为引用 `src/lib/version.ts` 的单一来源，避免每次发版都要改测试。
@@ -17,6 +17,7 @@
 - README 增加 CI / Release / License / 技术栈徽章，新增英文摘要与成熟度说明，补充免安装离线包入口与本地质量门命令。
 - `package.json` 补齐 `repository` / `homepage` / `bugs` / `keywords` / `author` 元数据。
 - `.npmrc` 不再提交镜像源与 `legacy-peer-deps` 配置（改为 gitignore 的本地文件），clone 后使用默认 registry，避免海外环境安装异常；`npm ci` 不再依赖该开关。
+- 版本号升至 v1.5.3；`src/lib/version.ts`、README、`PRIVACY.md`、`ROADMAP.md`、`SECURITY.md` 与 Issue 表单占位符同步更新。
 
 ### Added
 - `SECURITY.md`：安全报告范围、私密上报渠道与维护者承诺。

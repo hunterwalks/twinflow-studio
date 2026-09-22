@@ -33,7 +33,7 @@ body:
     attributes:
       label: 版本 / Version
       description: 页面左下角或顶栏显示的版本号，或使用在线版时对应的 Release
-      placeholder: v1.5.2
+      placeholder: v1.5.3
     validations:
       required: true
   - type: dropdown
