@@ -8,6 +8,7 @@
 
 ### Fixed
 - 修复 v1.5.2 起 E2E 版本断言失败：`e2e/flows.spec.ts` 不再硬编码版本号，改为引用 `src/lib/version.ts` 的单一来源，避免每次发版都要改测试。
+- 修复 `package-lock.json` 与 npm 10 的不同步：根层 `picomatch` 由 2.3.2 归一为 4.0.7（2.x 改为按需嵌套在 `anymatch` / `micromatch` / `readdirp` 下），并把锁文件根版本号从 1.5.1 同步为 1.5.2。此前该不一致被仓库内 `legacy-peer-deps` 掩盖，移除镜像配置后 CI 的 `npm ci` 立即报 EUSAGE；现已用 npm 10 重新生成，`npm ci` 在 npm 10 / npm 11 下均通过。
 - README 版本号、`src/lib/version.ts` 注释、`PRIVACY.md` 更新版本统一到 v1.5.2，消除四处文档漂移。
 - ROADMAP 补齐 v1.2.0–v1.5.2 已完成项，移除过期的「近期规划（v1.2.x）」。
 - CI 截图产物名从固定 `v1.5.1-screenshots` 改为 `screenshots-<sha>`，不再随版本漂移。
@@ -15,7 +16,7 @@
 ### Changed
 - README 增加 CI / Release / License / 技术栈徽章，新增英文摘要与成熟度说明，补充免安装离线包入口与本地质量门命令。
 - `package.json` 补齐 `repository` / `homepage` / `bugs` / `keywords` / `author` 元数据。
-- `.npmrc` 不再提交镜像源配置（改为 gitignore 的本地文件），clone 后使用默认 registry，避免海外环境安装异常；已验证不带 `legacy-peer-deps` 时 `npm ci` 正常。
+- `.npmrc` 不再提交镜像源与 `legacy-peer-deps` 配置（改为 gitignore 的本地文件），clone 后使用默认 registry，避免海外环境安装异常；`npm ci` 不再依赖该开关。
 
 ### Added
 - `SECURITY.md`：安全报告范围、私密上报渠道与维护者承诺。
