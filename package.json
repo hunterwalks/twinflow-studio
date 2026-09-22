@@ -3,6 +3,25 @@
   "version": "1.5.2",
   "description": "Local-first digital-twin data modeling and quality governance workbench for CSV and Excel.",
   "license": "MIT",
+  "author": "hunterwalks",
+  "homepage": "https://hunterwalks.github.io/twinflow-studio/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hunterwalks/twinflow-studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hunterwalks/twinflow-studio/issues"
+  },
+  "keywords": [
+    "digital-twin",
+    "data-governance",
+    "data-quality",
+    "local-first",
+    "csv",
+    "xlsx",
+    "nextjs",
+    "typescript"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

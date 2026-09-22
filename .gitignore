@@ -3,6 +3,9 @@ node_modules/
 .pnp
 .pnp.js
 
+# 本地 npm 配置（例如镜像源 / 代理）；公开仓库不提交，保证 clone 后使用默认 registry
+.npmrc
+
 # next.js
 .next/
 # 本地构建改名让位产生的 .next 变体目录（scripts/build-local.sh 产物）

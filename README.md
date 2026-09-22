@@ -1,10 +1,31 @@
 # TwinFlow Studio
 
+[![CI](https://github.com/hunterwalks/twinflow-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/hunterwalks/twinflow-studio/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/hunterwalks/twinflow-studio?sort=semver)](https://github.com/hunterwalks/twinflow-studio/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
+
 > Local-first 的数字孪生数据建模与质量治理工作台
 
 TwinFlow Studio 面向数字孪生项目早期阶段，在浏览器本地完成 Excel / CSV 导入、字段映射、四表建模、校验、关系图、修复、报告导出与跨项目对比。无需后端，不依赖 API Key，刷新或重开后自动恢复。
 
-**当前版本：v1.5.1**
+**当前版本：v1.5.2**（版本号唯一来源为 `package.json`；`src/lib/version.ts`、页脚与报告元信息同步维护，避免漂移）
+
+### In English
+
+TwinFlow Studio is a **local-first, MIT-licensed** workbench for digital-twin data modeling and quality governance. Everything runs in the browser: no backend, no API key, no data upload.
+
+- **Four-object model** — Space / Asset / Sensor / Observation (site → equipment → point → measurement).
+- **CSV / XLSX import** — sheet selection, automatic field mapping with confidence hints.
+- **24 deterministic rules** — completeness, uniqueness, references, hierarchy, coverage, convention. Every issue traces to a specific table / row / field.
+- **Explainable quality score** — 0–100 with A–E grade and per-dimension deductions.
+- **Relationship graph, guided fixes, self-contained HTML / JSON governance report, cross-project comparison.**
+- **Quality gates** — 235 unit tests, 25 Playwright end-to-end tests, plus `typecheck` / `lint` / production `build` in CI.
+
+Try it in about 30 seconds: <https://hunterwalks.github.io/twinflow-studio/>
+
+> Maturity note: an early-stage project maintained by a single maintainer. Adoption is still limited, so the strongest signals today are the deterministic engine, the test suite, CI, and the release history.
 
 ## 核心能力
 
@@ -20,17 +41,25 @@ TwinFlow Studio 面向数字孪生项目早期阶段，在浏览器本地完成 
 
 ## 快速开始
 
-### 在线使用
+三种方式任选其一。
+
+### 1. 在线使用（零安装）
 
 1. 打开 [TwinFlow Studio 在线版](https://hunterwalks.github.io/twinflow-studio/)。
 2. 点击「从 Demo 开始」载入合成工业园区数据集。
 3. 依次体验「校验数据 → 查看关系图 → 导出报告 → 跨项目对比」。
 
-### 本地运行
+### 2. 免安装离线包（无需 Node.js）
+
+在 [Releases](https://github.com/hunterwalks/twinflow-studio/releases/latest) 下载 web 静态包（文件名形如 `twinflow-studio-v1.5.2-web.zip`），解压后用任意静态服务器打开即可：全程不联网、不上传数据。
+
+### 3. 源码运行（二次开发）
 
 要求：Node.js ≥ 18.18（推荐 20+），npm ≥ 9。
 
 ```bash
+git clone https://github.com/hunterwalks/twinflow-studio.git
+cd twinflow-studio
 npm ci
 npm run dev        # http://localhost:3000
 ```
@@ -41,10 +70,17 @@ npm run dev        # http://localhost:3000
 |---|---|
 | `npm run dev` | 启动开发服务 |
 | `npm run build` | 生产构建（非静态导出） |
+| `npm run start` | 启动生产服务（需先 `npm run build`） |
 | `npm run typecheck` | TypeScript 类型检查 |
 | `npm run lint` | ESLint 检查 |
 | `npm run test` | 运行 Vitest 单元测试 |
 | `npm run test:e2e` | 运行 Playwright E2E（需先 `npx playwright install chromium`） |
+
+CI 状态见上方徽章。本地一次跑完五道质量门：
+
+```bash
+npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e
+```
 
 ## 演示
 
@@ -76,6 +112,9 @@ twinflow-studio/
 ├── screenshots/          # README 演示截图
 ├── CHANGELOG.md          # 完整版本历史
 ├── CONTRIBUTING.md       # 贡献指南
+├── SECURITY.md           # 安全策略与漏洞上报方式
+├── PRIVACY.md            # 隐私说明（local-first 边界）
+├── ROADMAP.md            # 路线图
 └── LICENSE               # MIT
 ```
 

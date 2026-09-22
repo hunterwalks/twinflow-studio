@@ -1,5 +1,6 @@
 import { test, expect, type Download, type Page } from "@playwright/test";
 import { join } from "path";
+import { APP_VERSION } from "../src/lib/version";
 
 async function downloadText(download: Download): Promise<string> {
   const stream = await download.createReadStream();
@@ -98,7 +99,8 @@ test.describe("TwinFlow Studio 主流程 E2E", () => {
     const exported = JSON.parse(await downloadText(json)) as {
       meta: { version: string; recordCount: { observations: number } };
     };
-    expect(exported.meta.version).toBe("1.5.1");
+    // 不在测试里硬编码版本号：报告元信息必须与应用版本单一来源保持一致。
+    expect(exported.meta.version).toBe(APP_VERSION);
     expect(exported.meta.recordCount.observations).toBeGreaterThan(0);
 
     const [html] = await Promise.all([

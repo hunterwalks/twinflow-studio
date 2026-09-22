@@ -1,0 +1,72 @@
+name: Bug 报告 / Bug report
+description: 报告可复现的缺陷（请使用合成数据）
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。提交前请先搜索已有 Issue，避免重复。
+        Thanks for reporting — please search existing issues first.
+
+        ⚠️ **不要提交真实客户数据、公司项目原始数据、凭据或密钥。**
+        请使用内置合成 Demo 数据，或自行构造最小脱敏样例。
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述 / What happened
+      description: 你期望发生什么，实际发生了什么
+      placeholder: 期望…… 实际……
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤 / Steps to reproduce
+      placeholder: |
+        1. 打开 ……
+        2. 点击 ……
+        3. 看到 ……
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 版本 / Version
+      description: 页面左下角或顶栏显示的版本号，或使用在线版时对应的 Release
+      placeholder: v1.5.2
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 运行方式 / How you run it
+      options:
+        - 在线版（GitHub Pages）
+        - 免安装离线包（web zip）
+        - 源码本地运行（npm run dev / start）
+      default: 0
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: 浏览器与操作系统 / Browser and OS
+      placeholder: Chrome 140 / Windows 11
+    validations:
+      required: false
+  - type: textarea
+    id: sample
+    attributes:
+      label: 合成样例或截图 / Synthetic sample or screenshot
+      description: 如涉及导入，请附上最小合成 CSV/XLSX 片段或截图；不要附真实数据
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: 确认 / Confirmations
+      options:
+        - label: 我已搜索过已有 Issue
+          required: true
+        - label: 本 Issue 不包含真实客户数据、凭据或密钥
+          required: true

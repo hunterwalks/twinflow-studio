@@ -1,0 +1,38 @@
+name: 功能建议 / Feature request
+description: 提出与项目定位一致的功能建议
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        建议前请先阅读 [ROADMAP](../blob/main/ROADMAP.md) 与「明确不做」边界：
+        本项目保持 **local-first、无后端、运行时不依赖外部 AI**，
+        不做三维渲染引擎、实时 IoT 时序平台、工单 / 资产运维等全栈业务系统。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你想解决什么问题 / Problem
+      description: 描述真实场景与当前的阻碍，而不是直接给出实现方案
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望的方案 / Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 考虑过的替代方案 / Alternatives considered
+    validations:
+      required: false
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: 范围确认 / Scope check
+      options:
+        - label: 该建议不要求引入后端或上传用户数据
+          required: true
+        - label: 该建议不要求运行时依赖外部 AI 服务
+          required: true

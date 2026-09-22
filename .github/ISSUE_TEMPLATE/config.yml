@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 在线体验 / Live demo
+    url: https://hunterwalks.github.io/twinflow-studio/
+    about: 先在浏览器里试一次，无需安装、不上传数据
+  - name: 使用说明与常见问题 / Docs and FAQ
+    url: https://github.com/hunterwalks/twinflow-studio/blob/main/README.md
+    about: 快速开始、隐私边界、四表模型与目录结构
+  - name: 私密上报安全问题 / Report a vulnerability privately
+    url: https://github.com/hunterwalks/twinflow-studio/security/advisories/new
+    about: 请不要为未修复的安全问题创建公开 Issue

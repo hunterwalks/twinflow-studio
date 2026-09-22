@@ -90,6 +90,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v1.5.1-screenshots
+          name: screenshots-${{ github.sha }}
           path: screenshots/
           retention-days: 30
